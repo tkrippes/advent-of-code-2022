@@ -1,5 +1,8 @@
 # Opponent: A: rock, B: paper, C: scissors
-# You: X: rock, Y: paper, Z: scissors
+# You (1): X: rock, Y: paper, Z: scissors
+# Outcome (2): X: loss, Y: draw, Z: win
+# Points: rock: 1, paper: 2, scissors: 3
+# loss: 0, draw: 3, win: 6
 
 def points_for_match_1(opponent_shape, your_shape):
     match opponent_shape:
