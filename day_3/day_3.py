@@ -9,10 +9,10 @@ def get_shared_character(string_1, string_2):
 
 def priority_of_character(character):
     # lowercase letter
-    if ord(character) >= ord('a') && ord(character) <= ord('z'):
+    if ord(character) >= ord('a') and ord(character) <= ord('z'):
         return ord(character) - ord('a') + 1
     # uppercase letter
-    elif ord(character) >= ord('A') && ord(character) <= ord('Z'):
+    elif ord(character) >= ord('A') and ord(character) <= ord('Z'):
         return ord(character) - ord('A') + 27
     else:
         return 0
@@ -24,10 +24,12 @@ with open('data_3_input.txt') as rucksacks:
     
     # calculate sum of priorities
     for line in lines:
-        first_compartment_items = line[:len(line / 2)]
-        second_compartment_items = line[len(line / 2):]
-        character = get_shared_character(first_compartement_items, second_compartment_item)
+        # strip any leading or trailing whitespaces
+        line = line.strip()
+        first_compartment_items = line[:len(line) // 2]
+        second_compartment_items = line[len(line) // 2:]
+        character = get_shared_character(first_compartment_items, second_compartment_items)
         sum_of_priorities += priority_of_character(character)
         
     # result 1
-    print(sum_of_priorites)
+    print(sum_of_priorities)
