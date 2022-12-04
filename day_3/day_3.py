@@ -28,17 +28,31 @@ def priority_of_character(character):
 
 with open('data_3_input.txt') as rucksacks:
     # init variables
-    lines = rucksacks.readlines()
-    sum_of_priorities = 0
+    sum_of_priorities_1 = 0
+    sum_of_priorities_2 = 0
     
-    # calculate sum of priorities  1
-    for line in lines:
-        # strip any leading or trailing whitespaces
-        line = line.strip()
-        first_compartment_items = line[:len(line) // 2]
-        second_compartment_items = line[len(line) // 2:]
-        character = get_shared_character_2(first_compartment_items, second_compartment_items)
-        sum_of_priorities += priority_of_character(character)
+    # calculate sum of priorities
+    line = rucksacks.readline().strip()
+    while(line):
+        line_2 = rucksacks.readline().strip()
+        line_3 = rucksacks.readline().strip()
+        
+        # sum of priorities 1
+        for rucksack in [line, line_2, line_3]:
+            first_compartment_items = rucksack[:len(rucksack) // 2]
+            second_compartment_items = rucksack[len(rucksack) // 2:]
+            character = get_shared_character_2(first_compartment_items, second_compartment_items)
+            sum_of_priorities_1 += priority_of_character(character)
+        
+        # sum of priorities 2
+        character = get_shared_character_3(line, line_2, line_3)
+        sum_of_priorities_2 += priority_of_character(character)
+        
+        # next rucksack
+        line = rucksacks.readline().strip()
         
     # result 1
-    print(sum_of_priorities)
+    print(sum_of_priorities_1)
+    
+    # result 2
+    print(sum_of_priorities_2)
