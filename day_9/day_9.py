@@ -80,7 +80,7 @@ with open('day_9_input.txt') as movements:
 
     for line in lines:
         [direction, steps] = line.split(' ')
-        for i in range(0, int(steps.strip())):
+        for i in range(0, int(steps)):
             match direction:
                 case 'U':
                     head_position = [head_position[0], head_position[1] + 1]
