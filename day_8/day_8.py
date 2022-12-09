@@ -68,7 +68,6 @@ with open('day_8_input.txt') as tree_map_input:
             # tree visible from right
             if tree_visible:
                 number_of_visible_trees += 1
-                continue
 
     # calculate scenic score
     for i in range(0, len(tree_map)):
@@ -79,18 +78,15 @@ with open('day_8_input.txt') as tree_map_input:
             # TODO remove
             text = 'Local score for (' + str(i) + ', ' + str(j) + '): '
 
-            # calculate top score
+            # calculate top score (start from tree not from edge)
             local_score = 0
-            for k in range(0, i):
+            for k in reversed(range(0, i)):
                 local_score += 1
                 if tree_map[k][j] >= tree_map[i][j]:
                     break
 
             # update scenic score
             scenic_score[-1][-1] *= local_score
-
-            # TODO remove
-            text += 'Top: ' + str(local_score) + ', '
 
             # check bottom score
             local_score = 0
@@ -102,21 +98,15 @@ with open('day_8_input.txt') as tree_map_input:
             # update scenic score
             scenic_score[-1][-1] *= local_score
 
-            # TODO remove
-            text += 'Bottom: ' + str(local_score) + ', '
-
-            # calculate left score
+            # calculate left score (start from tree not from edge)
             local_score = 0
-            for k in range(0, j):
+            for k in reversed(range(0, j)):
                 local_score += 1
                 if tree_map[i][k] >= tree_map[i][j]:
                     break
 
             # update scenic score
             scenic_score[-1][-1] *= local_score
-
-            # TODO remove
-            text += 'Left: ' + str(local_score) + ', '
 
             # calculate right score
             local_score = 0
@@ -128,16 +118,8 @@ with open('day_8_input.txt') as tree_map_input:
             # update scenic score
             scenic_score[-1][-1] *= local_score
 
-            # TODO remove
-            text += 'Right: ' + str(local_score) + ', '
-
-            # TODO remove
-            print(text)
-
     # answer 1
     print(number_of_visible_trees)
 
     # answer 2
-    print(tree_map)
-    print(scenic_score)
     print(max(map(max, scenic_score)))
