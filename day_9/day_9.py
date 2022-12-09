@@ -20,7 +20,7 @@ def get_distance_between_positions(head_position, tail_position):
         return 0
 
     # head an tail on
-    if abs(head_position[0] - tail_position[0]) <= 1 and abs(head_position[1] - tail_position[1] <= 1):
+    if abs(head_position[0] - tail_position[0]) <= 1 and abs(head_position[1] - tail_position[1]) <= 1:
         return 1
 
     # if distance between head and tail is bigger than 1, assume 2
@@ -37,13 +37,9 @@ def move_tail(head_position, tail_position):
         # move down
         if y_difference < 0:
             tail_position[1] -= 1
-            print('Needed to move down: head: ' +
-                  str(head_position) + ', tail: ' + str(tail_position))
         # move up
         elif y_difference > 0:
             tail_position[1] += 1
-            print('Needed to move up: head: ' +
-                  str(head_position) + ', tail: ' + str(tail_position))
         return tail_position
 
     # move left or right
@@ -51,13 +47,9 @@ def move_tail(head_position, tail_position):
         # move left
         if x_difference < 0:
             tail_position[0] -= 1
-            print('Needed to move left: head: ' +
-                  str(head_position) + ', tail: ' + str(tail_position))
         # move right
         elif x_difference > 0:
             tail_position[0] += 1
-            print('Needed to move right: head: ' +
-                  str(head_position) + ', tail: ' + str(tail_position))
         return tail_position
 
     # move diagonally
@@ -73,8 +65,6 @@ def move_tail(head_position, tail_position):
     elif x_difference > 0 and y_difference > 0:
         tail_position[0] += 1
         tail_position[1] += 1
-    print('Need to move diagonally: head: ' +
-          str(head_position) + ', tail: ' + str(tail_position))
 
     return tail_position
 
@@ -90,8 +80,7 @@ with open('day_9_input.txt') as movements:
 
     for line in lines:
         [direction, steps] = line.split(' ')
-        print(direction + steps)
-        for i in range(0, int(steps)):
+        for i in range(0, int(steps.strip())):
             match direction:
                 case 'U':
                     head_position = [head_position[0], head_position[1] + 1]
