@@ -133,3 +133,87 @@ with open('day_11_input.txt') as notes:
 
     # answer 1
     print(math.prod(sorted(number_of_inspections, reverse=True)[:2]))
+
+with open('day_11_input.txt') as notes:
+    # init variables
+    monkeys = []
+
+    line = notes.readline().strip()
+    while (line):
+        # monkey index
+        if line.startswith('Monkey'):
+            # get attributes of monkey
+            index = int(line.split(' ')[1][:-1])
+            line = notes.readline().strip()
+            while (line != ''):
+                # starting items
+                if line.startswith('Starting items:'):
+                    items = [int(item.strip())
+                             for item in line.split(':')[1].split(',')]
+                # operation
+                elif line.startswith('Operation'):
+                    [operation, operation_number] = line.split(
+                        ':')[1].strip().split(' ')[-2:]
+                    # if operation number is not old, convert to string
+                    if operation_number != 'old':
+                        operation_number = int(operation_number)
+                # test
+                elif line.startswith('Test'):
+                    test_divisor = int(line.split(' ')[-1])
+                # test true condition
+                elif line.startswith('If true'):
+                    true_monkey_index = int(line.split(' ')[-1])
+                # test false condition
+                elif line.startswith('If false'):
+                    false_monkey_index = int(line.split(' ')[-1])
+                # this should not happen
+                else:
+                    print('Cannot identify line "' + line +
+                          '" for monkey ' + str(index))
+
+                # go to next line
+                line = notes.readline().strip()
+
+            # add new monkey to list
+            monkeys.append(Monkey(index, items, operation, operation_number,
+                           test_divisor, true_monkey_index, false_monkey_index))
+            line = notes.readline().strip()
+
+        # here this line should again begin with Monkey or empty
+        if not line.startswith('Monkey') and not line == '':
+            print('Cannot identify line "' + line + '" at all')
+
+    # find the limit for the current divisors
+    test_divisors = []
+    for monkey in monkeys:
+        test_divisors.append(monkey.test_divisor)
+    divisor_limit = math.prod(test_divisors)
+
+    # iterate over 10000 rounds
+    for i in range(0, 10000):
+        # iterate over all monkeys
+        for monkey in monkeys:
+            for worry_level in monkey.items:
+                # operation
+                worry_level = monkey.do_operation(worry_level)
+
+                # give item to next monkey
+                next_monkey_index = monkey.get_next_monkey_index(worry_level)
+                monkeys[next_monkey_index].add_item(worry_level)
+
+            # monkey has no more items
+            monkey.clear_items()
+
+        # after each round, do a clean up
+        for monkey in monkeys:
+            for j in range(0, len(monkey.items)):
+                if monkey.items[j] > divisor_limit:
+                    monkey.items[j] = monkey.items[j] % divisor_limit
+
+    # number of inspections
+    number_of_inspections = []
+    for monkey in monkeys:
+        number_of_inspections.append(monkey.number_of_inspections)
+
+    # answer 2
+    print(math.prod(sorted(number_of_inspections, reverse=True)[:2]))
