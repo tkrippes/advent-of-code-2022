@@ -1,3 +1,7 @@
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 def get_shared_character_2(string_1, string_2):
     # search for common character
     for character in string_1:
@@ -26,7 +30,7 @@ def priority_of_character(character):
     else:
         return 0
 
-with open('data_3_input.txt') as rucksacks:
+with open(file_name) as rucksacks:
     # init variables
     sum_of_priorities_1 = 0
     sum_of_priorities_2 = 0

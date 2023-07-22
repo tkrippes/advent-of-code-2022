@@ -1,8 +1,12 @@
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 def intersection(list_1, list_2):
     return [element for element in list_1 if element in list_2]
 
 
-with open('day_4_input.txt') as workload:
+with open(file_name) as workload:
     # init variables
     lines = workload.readlines()
     number_of_whole_overlaps = 0

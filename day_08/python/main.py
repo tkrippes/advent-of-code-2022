@@ -1,4 +1,8 @@
-with open('day_8_input.txt') as tree_map_input:
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
+with open(file_name) as tree_map_input:
     # init variables
     lines = tree_map_input.readlines()
     tree_map = []

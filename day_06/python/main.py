@@ -1,3 +1,7 @@
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 def get_index_of_first_different_characters(input, number_of_characters):
     # starting point
     for i in range(0, len(input) - number_of_characters):
@@ -24,7 +28,7 @@ def get_index_of_first_different_characters(input, number_of_characters):
     return -1
 
 
-with open('day_6_input.txt') as datastream:
+with open(file_name) as datastream:
     # init variables
     data = datastream.readlines()
 

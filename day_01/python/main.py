@@ -1,4 +1,8 @@
-with open('day_1_input.txt') as calories:
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
+with open(file_name) as calories:
     # init variables
     lines = calories.readlines()
     elf_number = 1

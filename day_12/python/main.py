@@ -1,6 +1,10 @@
 # try to implement the Dijkstra algorithm
 
-with open('day_12_input.txt') as height_map_input:
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
+with open(file_name) as height_map_input:
     # init variables
     lines = height_map_input.readlines()
     start_position = [0, 0]

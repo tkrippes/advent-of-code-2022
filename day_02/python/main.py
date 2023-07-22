@@ -4,6 +4,10 @@
 # Points: rock: 1, paper: 2, scissors: 3
 # loss: 0, draw: 3, win: 6
 
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 def points_for_match_1(opponent_shape, your_shape):
     match opponent_shape:
         case 'A':
@@ -76,7 +80,7 @@ def points_for_match_2(opponent_shape, out_come):
             return 0
 
 
-with open('day_2_input.txt') as strategy:
+with open(file_name) as strategy:
     # init variables
     lines = strategy.readlines()
     score_1 = 0

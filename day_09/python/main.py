@@ -1,3 +1,7 @@
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 def add_tail_position_if_not_present(visited_positions, tail_position):
     found_position = False
 
@@ -69,7 +73,7 @@ def move_element(leading_element_position, current_element_position):
     return current_element_position
 
 
-with open('day_9_input.txt') as movements:
+with open(file_name) as movements:
     # init variables
     lines = movements.readlines()
     head_position = [0, 0]

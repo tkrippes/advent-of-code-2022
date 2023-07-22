@@ -1,5 +1,7 @@
 import math
+import os
 
+file_name = os.path.join('..', 'input', 'input.txt')
 
 class Monkey:
     def __init__(self, index, items, operation, operation_number, test_divisor, true_monkey_index, false_monkey_index):
@@ -59,7 +61,7 @@ class Monkey:
             str(self.number_of_inspections)
 
 
-with open('day_11_input.txt') as notes:
+with open(file_name) as notes:
     # init variables
     monkeys = []
 
@@ -134,7 +136,7 @@ with open('day_11_input.txt') as notes:
     # answer 1
     print(math.prod(sorted(number_of_inspections, reverse=True)[:2]))
 
-with open('day_11_input.txt') as notes:
+with open(file_name) as notes:
     # init variables
     monkeys = []
 

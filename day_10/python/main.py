@@ -1,4 +1,8 @@
-with open('day_10_input.txt') as instructions:
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
+with open(file_name) as instructions:
     # init variables
     registry_value = 1
     cycle_number = 1

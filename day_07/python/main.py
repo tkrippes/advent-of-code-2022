@@ -1,3 +1,7 @@
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
 class File:
     def __init__(self, size, name):
         self.size = size
@@ -122,7 +126,7 @@ def update_current_path(current_path, directory):
     return current_path
 
 
-with open('day_7_input.txt') as command_line:
+with open(file_name) as command_line:
     # init variables
     file_system = FileSystem()
     current_path = ['/']

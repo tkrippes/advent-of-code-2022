@@ -1,4 +1,8 @@
-with open('day_5_input.txt') as cargo:
+import os
+
+file_name = os.path.join('..', 'input', 'input.txt')
+
+with open(file_name) as cargo:
     # init variables
     lines = cargo.readlines()
     breaking_line = 0
