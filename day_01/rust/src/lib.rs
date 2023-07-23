@@ -1,141 +1,95 @@
-use std::{cell::RefCell, fs::File, io::BufRead, io::BufReader, path::Path};
-use tracing::{error, Level};
-use tracing_subscriber::FmtSubscriber;
+mod elf;
+mod parser;
 
-#[derive(Debug)]
-struct Elf {
-    calories: RefCell<Vec<i32>>,
-}
+use std::path::Path;
 
-impl Elf {
-    fn get_total_calories(&self) -> i32 {
-        self.calories.borrow().iter().sum()
-    }
-}
-
-impl PartialEq for Elf {
-    fn eq(&self, other: &Self) -> bool {
-        self.calories == other.calories
-    }
-}
-
-pub fn get_calories_from_elf_with_most(input_file_name: &Path) -> Option<i32> {
-    setup_logging(Level::WARN);
-
-    let elves = parse_file(input_file_name)?;
-
-    get_max_calories(elves)
-}
-
-fn setup_logging(level: Level) {
-    let subscriber = FmtSubscriber::builder().with_max_level(level).finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-}
-
-fn parse_file(input_file_name: &Path) -> Option<Vec<Elf>> {
-    let file = match File::open(input_file_name) {
-        Ok(file) => file,
-        Err(err) => {
-            error!("could not open file, {}", err);
-            return None;
-        }
+pub fn get_max_calories_from_one_elf(input_file_name: &Path) -> u32 {
+    let elves_parser = parser::ElvesParser::build(input_file_name);
+    let elves = match elves_parser.try_get_elves() {
+        Ok(elves) => elves,
+        Err(_) => return 0,
     };
 
-    parse_elves_from_file(file)
+    elves.get_max_calories_of_one_elf()
 }
 
-fn parse_elves_from_file(input_file: File) -> Option<Vec<Elf>> {
-    let file_reader = BufReader::new(input_file);
-    let mut elves = Vec::new();
+pub fn get_max_calories_from_three_elves(input_file_name: &Path) -> u32 {
+    let elves_parser = parser::ElvesParser::build(input_file_name);
+    let elves = match elves_parser.try_get_elves() {
+        Ok(elves) => elves,
+        Err(_) => return 0,
+    };
 
-    for (index, line) in file_reader.lines().enumerate() {
-        if index == 0 {
-            elves.push(Elf {
-                calories: RefCell::new(Vec::new()),
-            });
-        }
-
-        let number = match line {
-            Ok(line) => {
-                if line.is_empty() {
-                    if !elves.last().unwrap().calories.borrow().is_empty() {
-                        elves.push(Elf {
-                            calories: RefCell::new(Vec::new()),
-                        });
-                    }
-                    continue;
-                }
-
-                match line.parse::<i32>() {
-                    Ok(number) => number,
-                    Err(err) => {
-                        error!(
-                            "could not parse elves from file, error in lines {}, {}",
-                            index + 1,
-                            err
-                        );
-                        return None;
-                    }
-                }
-            }
-            Err(err) => {
-                error!(
-                    "could not parse elves from file, error in line {}, {}",
-                    index + 1,
-                    err
-                );
-                return None;
-            }
-        };
-
-        let mut last_elf_calories = elves.last().unwrap().calories.borrow_mut();
-        last_elf_calories.push(number);
-    }
-
-    Some(elves)
-}
-
-fn get_max_calories(elves: Vec<Elf>) -> Option<i32> {
-    elves.iter().map(|elf| elf.get_total_calories()).max()
+    elves.get_max_calories_of_three_elves()
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::ElvesParsingError;
+
     use super::*;
 
-    #[test]
-    fn test_input() {
-        let test_input_file_name = Path::new("../input/test_input.txt");
+    fn build_elves(input_elves: Vec<elf::Elf>) -> elf::Elves {
+        let mut elves = elf::Elves::new();
+        for elf in input_elves {
+            elves.push(elf);
+        }
+        elves
+    }
 
-        let elves = parse_file(test_input_file_name);
-
-        let expected_elves = vec![
-            Elf {
-                calories: RefCell::new(vec![1000, 2000, 3000]),
-            },
-            Elf {
-                calories: RefCell::new(vec![4000]),
-            },
-            Elf {
-                calories: RefCell::new(vec![5000, 6000]),
-            },
-            Elf {
-                calories: RefCell::new(vec![7000, 8000, 9000]),
-            },
-            Elf {
-                calories: RefCell::new(vec![10000]),
-            },
-        ];
-
-        assert_eq!(elves, Some(expected_elves));
+    fn build_elf(input_calories: Vec<u32>) -> elf::Elf {
+        let mut elf = elf::Elf::new();
+        for calories in input_calories {
+            elf.add_calories(calories);
+        }
+        elf
     }
 
     #[test]
-    fn test_input_result() {
+    fn test_input_file_elves() {
+        let file_name = Path::new("../input/test_input.txt");
+
+        let elves_parser = parser::ElvesParser::build(file_name);
+        let elves = elves_parser.try_get_elves();
+
+        let expected_elves = build_elves(vec![
+            build_elf(vec![1000, 2000, 3000]),
+            build_elf(vec![4000]),
+            build_elf(vec![5000, 6000]),
+            build_elf(vec![7000, 8000, 9000]),
+            build_elf(vec![10000]),
+        ]);
+
+        assert_eq!(elves, Ok(expected_elves));
+    }
+
+    #[test]
+    fn test_non_existing_input_file_elves() {
+        let file_name = Path::new("../input/wrong_test_input.txt");
+
+        let elves_parser = parser::ElvesParser::build(file_name);
+        let elves = elves_parser.try_get_elves();
+
+        let expected_error = ElvesParsingError::build(format!(
+            "could not open file {:?}, No such file or directory (os error 2)",
+            file_name
+        ));
+
+        assert_eq!(elves, Err(expected_error));
+    }
+
+    #[test]
+    fn test_input_file_result_1() {
+        let test_input_file_name = Path::new("../input/test_input.txt");
+        assert_eq!(get_max_calories_from_one_elf(test_input_file_name), 24000);
+    }
+
+    #[test]
+    fn test_input_file_result_2() {
         let test_input_file_name = Path::new("../input/test_input.txt");
         assert_eq!(
-            get_calories_from_elf_with_most(test_input_file_name),
-            Some(24000)
+            get_max_calories_from_three_elves(test_input_file_name),
+            45000
         );
     }
 }
