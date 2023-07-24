@@ -1,7 +1,10 @@
+use crate::game;
+use crate::shape;
 use core::fmt;
 use std::{error, fs, io, io::BufRead, path};
 
-use crate::game;
+use game::Game;
+use shape::Shape;
 
 #[derive(Debug, PartialEq)]
 pub struct GamesParsingError {
@@ -33,7 +36,7 @@ impl<'a> GamesParser<'a> {
         }
     }
 
-    pub fn try_get_games(&self) -> Result<Vec<game::Game>, GamesParsingError> {
+    pub fn try_get_games(&self) -> Result<Vec<Game>, GamesParsingError> {
         let file = self.try_open_file()?;
         let mut games = Vec::new();
 
@@ -67,7 +70,7 @@ fn try_get_line_content(line: Result<String, io::Error>) -> Result<String, Games
     }
 }
 
-fn try_get_game(splitted_line: Vec<&str>) -> Result<game::Game, GamesParsingError> {
+fn try_get_game(splitted_line: Vec<&str>) -> Result<Game, GamesParsingError> {
     if splitted_line.len() != 2 {
         return Err(GamesParsingError::build(format!(
             "error in file for {:?}, expected 2 shapes, not {}",
@@ -79,14 +82,14 @@ fn try_get_game(splitted_line: Vec<&str>) -> Result<game::Game, GamesParsingErro
     let opponent_shape = get_shape_from_input(splitted_line[0])?;
     let own_shape = get_shape_from_input(splitted_line[1])?;
 
-    Ok(game::Game::build(opponent_shape, own_shape))
+    Ok(Game::build(opponent_shape, own_shape))
 }
 
-fn get_shape_from_input(input: &str) -> Result<game::Shape, GamesParsingError> {
+fn get_shape_from_input(input: &str) -> Result<Shape, GamesParsingError> {
     match input {
-        "A" | "X" => Ok(game::Shape::Rock),
-        "B" | "Y" => Ok(game::Shape::Paper),
-        "C" | "Z" => Ok(game::Shape::Scissors),
+        "A" | "X" => Ok(Shape::Rock),
+        "B" | "Y" => Ok(Shape::Paper),
+        "C" | "Z" => Ok(Shape::Scissors),
         s => Err(GamesParsingError::build(format!(
             "error in file, expected 'A', 'B', 'C', 'X', 'Y' or 'Z', not {}",
             s
