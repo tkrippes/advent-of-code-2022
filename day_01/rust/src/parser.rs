@@ -24,77 +24,101 @@ impl fmt::Display for ElvesParsingError {
     }
 }
 
-pub struct ElvesParser<'a> {
-    file_name: &'a path::Path,
+pub struct ElvesParser {
+    file_name: String,
+    current_line: String,
+    current_line_index: usize,
+    elves: Vec<elf::Elf>,
 }
 
-impl<'a> ElvesParser<'a> {
-    pub fn build(file_name: &'a path::Path) -> Self {
-        ElvesParser { file_name }
+impl ElvesParser {
+    pub fn build(file_name: &str) -> Self {
+        ElvesParser {
+            file_name: String::from(file_name),
+            current_line: String::new(),
+            current_line_index: 0,
+            elves: Vec::new(),
+        }
     }
 
-    pub fn try_get_elves(&self) -> Result<elf::Elves, ElvesParsingError> {
+    pub fn try_get_elves(&mut self) -> Result<Vec<elf::Elf>, ElvesParsingError> {
         let file = self.try_open_file()?;
-        let mut elves = elf::Elves::new();
 
         for (index, line) in file.lines().enumerate() {
-            let line_content = try_get_line_content(line)?;
-            let line_content = line_content.trim();
+            self.try_set_current_line_and_index(line, index)?;
 
-            add_elf_on_first_line(&mut elves, index + 1);
+            self.add_new_elf_if_current_line_is_first_line();
 
-            if line_content.is_empty() {
-                add_elf_if_current_elf_has_calories(&mut elves);
+            if self.current_line.is_empty() {
+                self.add_new_elf_if_current_elf_has_calories();
                 continue;
             }
 
-            let calories = try_get_calories(line_content)?;
-            add_calories_to_current_elf(&mut elves, calories);
+            self.try_add_calories_to_current_elf()?
         }
 
-        Ok(elves)
+        Ok(self.elves.clone())
     }
 
     fn try_open_file(&self) -> Result<io::BufReader<fs::File>, ElvesParsingError> {
-        match fs::File::open(self.file_name) {
+        match fs::File::open(path::Path::new(&self.file_name)) {
             Ok(file) => Ok(io::BufReader::new(file)),
             Err(err) => Err(ElvesParsingError::build(format!(
-                "could not open file {:?}, {}",
+                "could not open file {}, {}",
                 self.file_name, err
             ))),
         }
     }
-}
 
-fn try_get_line_content(line: Result<String, io::Error>) -> Result<String, ElvesParsingError> {
-    match line {
-        Ok(line) => Ok(line),
-        Err(err) => Err(ElvesParsingError::build(format!("error in file, {}", err))),
+    fn try_set_current_line_and_index(
+        &mut self,
+        line: Result<String, io::Error>,
+        index: usize,
+    ) -> Result<(), ElvesParsingError> {
+        self.current_line = match line {
+            Ok(line) => line.trim().to_string(),
+            Err(err) => {
+                return Err(ElvesParsingError::build(format!(
+                    "error in file '{}' on line {}, {}",
+                    self.file_name, self.current_line_index, err
+                )))
+            }
+        };
+
+        self.current_line_index = index + 1;
+
+        Ok(())
     }
-}
 
-fn add_elf_on_first_line(elves: &mut elf::Elves, line_number: usize) {
-    if line_number == 1 {
-        elves.push(elf::Elf::new());
+    fn add_new_elf_if_current_line_is_first_line(&mut self) {
+        if self.current_line_index == 1 {
+            self.elves.push(elf::Elf::new());
+        }
     }
-}
 
-fn add_elf_if_current_elf_has_calories(elves: &mut elf::Elves) {
-    if elves.has_last_elf_calories() {
-        elves.push(elf::Elf::new());
+    fn add_new_elf_if_current_elf_has_calories(&mut self) {
+        if let Some(elf) = self.elves.last() {
+            if elf.has_calories() {
+                self.elves.push(elf::Elf::new());
+            }
+        }
     }
-}
 
-fn try_get_calories(line: &str) -> Result<u32, ElvesParsingError> {
-    match line.parse::<u32>() {
-        Ok(calories) => Ok(calories),
-        Err(err) => Err(ElvesParsingError::build(format!(
-            "error in file for '{}', {}",
-            line, err
-        ))),
+    fn try_add_calories_to_current_elf(&mut self) -> Result<(), ElvesParsingError> {
+        let calories = match self.current_line.parse::<u32>() {
+            Ok(calories) => calories,
+            Err(err) => {
+                return Err(ElvesParsingError::build(format!(
+                    "error in file '{}' on line {}, {}",
+                    self.file_name, self.current_line_index, err
+                )))
+            }
+        };
+
+        if let Some(elf) = self.elves.last_mut() {
+            elf.add_calories(calories);
+        }
+
+        Ok(())
     }
-}
-
-fn add_calories_to_current_elf(elves: &mut elf::Elves, calories: u32) {
-    elves.add_calories_to_last_elf(calories);
 }
