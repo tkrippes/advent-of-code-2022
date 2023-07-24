@@ -1,8 +1,10 @@
 mod elf;
 mod parser;
 
+use parser::ElvesParser;
+
 pub fn get_max_calories_from_one_elf(file_name: &str) -> u32 {
-    let mut elves_parser = parser::ElvesParser::build(file_name);
+    let mut elves_parser = ElvesParser::build(file_name);
     let elves = match elves_parser.try_get_elves() {
         Ok(elves) => elves,
         Err(_) => return 0,
@@ -16,7 +18,7 @@ pub fn get_max_calories_from_one_elf(file_name: &str) -> u32 {
 }
 
 pub fn get_max_calories_from_three_elves(file_name: &str) -> u32 {
-    let mut elves_parser = parser::ElvesParser::build(file_name);
+    let mut elves_parser = ElvesParser::build(file_name);
     let elves = match elves_parser.try_get_elves() {
         Ok(elves) => elves,
         Err(_) => return 0,
@@ -30,12 +32,13 @@ pub fn get_max_calories_from_three_elves(file_name: &str) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::ElvesParsingError;
+    use crate::elf::Elf;
+    use crate::parser::{ElvesParser, ElvesParsingError};
 
     use super::*;
 
-    fn build_elf(input_calories: Vec<u32>) -> elf::Elf {
-        let mut elf = elf::Elf::new();
+    fn build_elf(input_calories: Vec<u32>) -> Elf {
+        let mut elf = Elf::new();
         for calories in input_calories {
             elf.add_calories(calories);
         }
@@ -46,7 +49,7 @@ mod tests {
     fn test_input_file_elves() {
         let file_name = "../input/test_input.txt";
 
-        let elves = parser::ElvesParser::build(file_name).try_get_elves();
+        let elves = ElvesParser::build(file_name).try_get_elves();
 
         let expected_elves = vec![
             build_elf(vec![1000, 2000, 3000]),
@@ -63,7 +66,7 @@ mod tests {
     fn test_non_existing_input_file_elves() {
         let file_name = "../input/wrong_test_input.txt";
 
-        let elves = parser::ElvesParser::build(file_name).try_get_elves();
+        let elves = ElvesParser::build(file_name).try_get_elves();
 
         let expected_error = ElvesParsingError::build(format!(
             "could not open file {}, No such file or directory (os error 2)",

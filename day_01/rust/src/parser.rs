@@ -1,4 +1,4 @@
-use crate::elf;
+use crate::elf::Elf;
 use std::{
     error, fmt, fs,
     io::{self, BufRead},
@@ -28,7 +28,7 @@ pub struct ElvesParser {
     file_name: String,
     current_line: String,
     current_line_index: usize,
-    elves: Vec<elf::Elf>,
+    elves: Vec<Elf>,
 }
 
 impl ElvesParser {
@@ -41,7 +41,7 @@ impl ElvesParser {
         }
     }
 
-    pub fn try_get_elves(&mut self) -> Result<Vec<elf::Elf>, ElvesParsingError> {
+    pub fn try_get_elves(&mut self) -> Result<Vec<Elf>, ElvesParsingError> {
         let file = self.try_open_file()?;
 
         for (index, line) in file.lines().enumerate() {
@@ -92,14 +92,14 @@ impl ElvesParser {
 
     fn add_new_elf_if_current_line_is_first_line(&mut self) {
         if self.current_line_index == 1 {
-            self.elves.push(elf::Elf::new());
+            self.elves.push(Elf::new());
         }
     }
 
     fn add_new_elf_if_current_elf_has_calories(&mut self) {
         if let Some(elf) = self.elves.last() {
             if elf.has_calories() {
-                self.elves.push(elf::Elf::new());
+                self.elves.push(Elf::new());
             }
         }
     }
