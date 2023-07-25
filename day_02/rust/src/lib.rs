@@ -1,8 +1,7 @@
 mod game;
 mod parser;
-mod result;
-mod shape;
 
+use game::Game;
 use parser::GamesParser;
 
 pub fn get_games_points(file_name: &str) -> u32 {
@@ -19,8 +18,8 @@ pub fn get_games_points(file_name: &str) -> u32 {
 mod tests {
     use super::*;
 
-    use game::Game;
-    use shape::Shape;
+    use game::game_variant_1::GameVariant1;
+    use game::shape::Shape;
 
     #[test]
     fn test_input_file_games() {
@@ -30,9 +29,9 @@ mod tests {
         let games = game_parser.try_get_games();
 
         let expected_games = vec![
-            Game::build(Shape::Rock, Shape::Paper),
-            Game::build(Shape::Paper, Shape::Rock),
-            Game::build(Shape::Scissors, Shape::Scissors),
+            GameVariant1::build(Shape::Rock, Shape::Paper),
+            GameVariant1::build(Shape::Paper, Shape::Rock),
+            GameVariant1::build(Shape::Scissors, Shape::Scissors),
         ];
 
         assert_eq!(games, Ok(expected_games));
