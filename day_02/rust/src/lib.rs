@@ -4,7 +4,7 @@ mod parser;
 use game::GameVariant;
 use parser::GamesParser;
 
-pub fn get_points_game_variant_1(file_name: &str) -> u32 {
+pub fn get_game_variant_1_points(file_name: &str) -> u32 {
     let mut game_parser = GamesParser::build(file_name, GameVariant::V1);
     let games = match game_parser.try_get_games() {
         Ok(games) => games,
@@ -14,7 +14,7 @@ pub fn get_points_game_variant_1(file_name: &str) -> u32 {
     games.iter().map(|game| game.get_points()).sum()
 }
 
-pub fn get_points_game_variant_2(file_name: &str) -> u32 {
+pub fn get_game_variant_2_points(file_name: &str) -> u32 {
     let mut game_parser = GamesParser::build(file_name, GameVariant::V2);
     let games = match game_parser.try_get_games() {
         Ok(games) => games,
@@ -48,10 +48,12 @@ mod tests {
         assert_eq!(games, Ok(expected_games));
     }
 
+    // TODO add test with wrong input file
+
     #[test]
     fn test_input_file_result_game_variant_1() {
         let file_name = "../input/test_input.txt";
-        assert_eq!(get_points_game_variant_1(file_name), 15);
+        assert_eq!(get_game_variant_1_points(file_name), 15);
     }
 
     #[test]
@@ -70,9 +72,11 @@ mod tests {
         assert_eq!(games, Ok(expected_games));
     }
 
+    // TODO add test with wrong input file
+
     #[test]
     fn test_input_file_result_game_variant_2() {
         let file_name = "../input/test_input.txt";
-        assert_eq!(get_points_game_variant_2(file_name), 12);
+        assert_eq!(get_game_variant_2_points(file_name), 12);
     }
 }

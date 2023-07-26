@@ -37,10 +37,10 @@ impl Game {
     }
 
     pub fn get_points(&self) -> u32 {
-        self.get_shape().get_points() + self.get_game_result().get_points()
+        self.get_own_shape().get_points() + self.get_game_result().get_points()
     }
 
-    fn get_shape(&self) -> &Shape {
+    fn get_own_shape(&self) -> &Shape {
         match self {
             Game::V1 {
                 opponent_shape: _,
@@ -180,4 +180,6 @@ mod tests {
         assert_eq!(game.get_game_result().get_points(), 3);
         assert_eq!(game.get_points(), 6);
     }
+
+    // TODO add variant 2 points
 }

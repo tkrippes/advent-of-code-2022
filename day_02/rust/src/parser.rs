@@ -1,7 +1,9 @@
-use crate::game::result::Result as GameResult;
-use crate::game::{shape::Shape, Game, GameVariant};
-use core::fmt;
-use std::{error, fs, io, io::BufRead, path};
+use crate::game::{result::Result as GameResult, shape::Shape, Game, GameVariant};
+use std::{
+    error, fmt, fs,
+    io::{self, BufRead},
+    path,
+};
 
 #[derive(Debug, PartialEq)]
 pub struct GamesParsingError {
@@ -71,7 +73,7 @@ impl GamesParser {
             Ok(line) => line.trim().to_string(),
             Err(err) => {
                 return Err(GamesParsingError::build(format!(
-                    "error in file, '{}' on line {}, {}",
+                    "error in file '{}' on line {}, {}",
                     self.file_name, self.current_line_index, err
                 )))
             }
@@ -143,7 +145,7 @@ impl GamesParser {
                 "B" => Ok(Shape::Paper),
                 "C" => Ok(Shape::Scissors),
                 input => Err(GamesParsingError::build(format!(
-                    "error in file '{}' on line {}, expected 'A', 'B' or 'C', not {}",
+                    "error in file '{}' on line {}, expected 'A', 'B' or 'C' for shape, not {}",
                     self.file_name, self.current_line_index, input
                 ))),
             }
@@ -160,7 +162,7 @@ impl GamesParser {
                 "Y" => Ok(GameResult::Tie),
                 "Z" => Ok(GameResult::Win),
                 input => Err(GamesParsingError::build(format!(
-                    "error in file '{}' on line {}, expected 'X', 'Y' or 'Z', not {}",
+                    "error in file '{}' on line {}, expected 'X', 'Y' or 'Z' for result, not {}",
                     self.file_name, self.current_line_index, input
                 ))),
             },
