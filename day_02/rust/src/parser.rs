@@ -3,7 +3,7 @@ use crate::game::shape;
 use core::fmt;
 use std::{error, fs, io, io::BufRead, path};
 
-use game::game_variant_1::GameVariant1;
+use game::Game;
 use shape::Shape;
 
 #[derive(Debug, PartialEq)]
@@ -36,7 +36,7 @@ impl<'a> GamesParser<'a> {
         }
     }
 
-    pub fn try_get_games(&self) -> Result<Vec<GameVariant1>, GamesParsingError> {
+    pub fn try_get_games(&self) -> Result<Vec<Game>, GamesParsingError> {
         let file = self.try_open_file()?;
         let mut games = Vec::new();
 
@@ -70,7 +70,7 @@ fn try_get_line_content(line: Result<String, io::Error>) -> Result<String, Games
     }
 }
 
-fn try_get_game(splitted_line: Vec<&str>) -> Result<GameVariant1, GamesParsingError> {
+fn try_get_game(splitted_line: Vec<&str>) -> Result<Game, GamesParsingError> {
     if splitted_line.len() != 2 {
         return Err(GamesParsingError::build(format!(
             "error in file for {:?}, expected 2 shapes, not {}",
@@ -82,7 +82,7 @@ fn try_get_game(splitted_line: Vec<&str>) -> Result<GameVariant1, GamesParsingEr
     let opponent_shape = get_shape_from_input(splitted_line[0])?;
     let own_shape = get_shape_from_input(splitted_line[1])?;
 
-    Ok(GameVariant1::build(opponent_shape, own_shape))
+    Ok(Game::build_v1(opponent_shape, own_shape))
 }
 
 fn get_shape_from_input(input: &str) -> Result<Shape, GamesParsingError> {
