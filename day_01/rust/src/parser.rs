@@ -36,7 +36,7 @@ impl ElvesParser {
         ElvesParser {
             file_name: String::from(file_name),
             current_line: String::new(),
-            current_line_index: 0,
+            current_line_index: 1,
             elves: Vec::new(),
         }
     }
