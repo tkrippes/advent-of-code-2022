@@ -4,7 +4,12 @@ pub mod shape;
 use result::Result;
 use shape::Shape;
 
-#[derive(Debug, PartialEq)]
+pub enum GameVariant {
+    V1,
+    V2,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Game {
     V1 {
         opponent_shape: Shape,
