@@ -11,7 +11,7 @@ pub struct GamesParsingError {
 }
 
 impl GamesParsingError {
-    fn build(cause: String) -> Self {
+    pub fn build(cause: String) -> Self {
         GamesParsingError { cause }
     }
 }

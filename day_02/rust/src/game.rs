@@ -181,5 +181,93 @@ mod tests {
         assert_eq!(game.get_points(), 6);
     }
 
-    // TODO add variant 2 points
+    #[test]
+    fn test_rock_loss_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Rock,
+            result: Result::Loss,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 3);
+        assert_eq!(game.get_points(), 3);
+    }
+
+    #[test]
+    fn test_rock_tie_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Rock,
+            result: Result::Tie,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 1);
+        assert_eq!(game.get_points(), 4);
+    }
+
+    #[test]
+    fn test_rock_win_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Rock,
+            result: Result::Win,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 2);
+        assert_eq!(game.get_points(), 8);
+    }
+
+    #[test]
+    fn test_paper_loss_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Paper,
+            result: Result::Loss,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 1);
+        assert_eq!(game.get_points(), 1);
+    }
+
+    #[test]
+    fn test_paper_tie_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Paper,
+            result: Result::Tie,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 2);
+        assert_eq!(game.get_points(), 5);
+    }
+
+    #[test]
+    fn test_paper_win_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Paper,
+            result: Result::Win,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 3);
+        assert_eq!(game.get_points(), 9);
+    }
+
+    #[test]
+    fn test_scissors_loss_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Scissors,
+            result: Result::Loss,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 2);
+        assert_eq!(game.get_points(), 2);
+    }
+
+    #[test]
+    fn test_scissors_tie_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Scissors,
+            result: Result::Tie,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 3);
+        assert_eq!(game.get_points(), 6);
+    }
+
+    #[test]
+    fn test_scissors_win_points() {
+        let game = Game::V2 {
+            opponent_shape: Shape::Scissors,
+            result: Result::Win,
+        };
+        assert_eq!(game.get_own_shape().get_points(), 1);
+        assert_eq!(game.get_points(), 7);
+    }
 }

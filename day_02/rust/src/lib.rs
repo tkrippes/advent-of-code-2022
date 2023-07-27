@@ -26,6 +26,8 @@ pub fn get_game_variant_2_points(file_name: &str) -> u32 {
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::GamesParsingError;
+
     use super::*;
 
     use game::result::Result;
@@ -48,7 +50,20 @@ mod tests {
         assert_eq!(games, Ok(expected_games));
     }
 
-    // TODO add test with wrong input file
+    #[test]
+    fn test_wrong_input_file_game_variant_1() {
+        let file_name = "../input/wrong_test_input.txt";
+        let mut game_parser = GamesParser::build(file_name, GameVariant::V1);
+        let games = game_parser.try_get_games();
+
+        assert_eq!(
+            games,
+            Err(GamesParsingError::build(format!(
+                "could not open file '{}', No such file or directory (os error 2)",
+                file_name,
+            )))
+        );
+    }
 
     #[test]
     fn test_input_file_result_game_variant_1() {
@@ -72,7 +87,20 @@ mod tests {
         assert_eq!(games, Ok(expected_games));
     }
 
-    // TODO add test with wrong input file
+    #[test]
+    fn test_wrong_input_file_game_variant_2() {
+        let file_name = "../input/wrong_test_input.txt";
+        let mut game_parser = GamesParser::build(file_name, GameVariant::V2);
+        let games = game_parser.try_get_games();
+
+        assert_eq!(
+            games,
+            Err(GamesParsingError::build(format!(
+                "could not open file '{}', No such file or directory (os error 2)",
+                file_name,
+            )))
+        );
+    }
 
     #[test]
     fn test_input_file_result_game_variant_2() {
