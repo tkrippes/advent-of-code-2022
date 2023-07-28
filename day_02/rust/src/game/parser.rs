@@ -1,4 +1,4 @@
-use super::{result::Result as GameResult, shape::Shape, Game, GameVariant};
+use super::{result::Result as GameResult, shape::Shape, variant::Variant as GameVariant, Game};
 use std::{
     error, fmt, fs,
     io::{self, BufRead},
@@ -28,32 +28,36 @@ pub struct Parser {
     file_name: String,
     current_line: String,
     current_line_index: usize,
+    game_variant: GameVariant,
 }
 
 impl Parser {
-    pub fn build(file_name: &str) -> Self {
+    pub fn build_v1(file_name: &str) -> Self {
         Parser {
             file_name: String::from(file_name),
             current_line: String::new(),
             current_line_index: 0,
+            game_variant: GameVariant::V1,
         }
     }
 
-    pub fn try_get_games_variant_1(&mut self) -> Result<Vec<Game>, ParsingError> {
-        self.try_get_games(GameVariant::V1)
+    pub fn build_v2(file_name: &str) -> Self {
+        Parser {
+            file_name: String::from(file_name),
+            current_line: String::new(),
+            current_line_index: 0,
+            game_variant: GameVariant::V2,
+        }
     }
 
-    pub fn try_get_games_variant_2(&mut self) -> Result<Vec<Game>, ParsingError> {
-        self.try_get_games(GameVariant::V2)
-    }
-
-    fn try_get_games(&mut self, game_variant: GameVariant) -> Result<Vec<Game>, ParsingError> {
+    pub fn try_get_games(&mut self) -> Result<Vec<Game>, ParsingError> {
         let file = self.try_open_file()?;
         let mut games = Vec::new();
 
         for line in file.lines() {
             self.try_set_current_line_and_index(line)?;
-            let game = self.try_get_game(&game_variant)?;
+
+            let game = self.try_get_game()?;
             games.push(game);
         }
 
@@ -89,8 +93,8 @@ impl Parser {
         Ok(())
     }
 
-    fn try_get_game(&mut self, game_variant: &GameVariant) -> Result<Game, ParsingError> {
-        let game = match game_variant {
+    fn try_get_game(&mut self) -> Result<Game, ParsingError> {
+        let game = match self.game_variant {
             GameVariant::V1 => self.try_get_game_variant_1()?,
             GameVariant::V2 => self.try_get_game_variant_2()?,
         };
@@ -140,7 +144,7 @@ impl Parser {
             "B" | "Y" => Ok(Shape::Paper),
             "C" | "Z" => Ok(Shape::Scissors),
             input => Err(ParsingError::build(format!(
-                "error in file '{}' on line {}, expected 'A', 'B', 'C', 'X', 'Y' or 'Z', not {}",
+                "error in file '{}' on line {}, expected 'A', 'B', 'C', 'X', 'Y' or 'Z' for shape, got {}",
                 self.file_name, self.current_line_index, input
             ))),
         }
@@ -152,7 +156,7 @@ impl Parser {
             "B" => Ok(Shape::Paper),
             "C" => Ok(Shape::Scissors),
             input => Err(ParsingError::build(format!(
-                "error in file '{}' on line {}, expected 'A', 'B' or 'C' for shape, not {}",
+                "error in file '{}' on line {}, expected 'A', 'B' or 'C' for shape, got {}",
                 self.file_name, self.current_line_index, input
             ))),
         }
@@ -164,7 +168,7 @@ impl Parser {
             "Y" => Ok(GameResult::Tie),
             "Z" => Ok(GameResult::Win),
             input => Err(ParsingError::build(format!(
-                "error in file '{}' on line {}, expected 'X', 'Y' or 'Z' for result, not {}",
+                "error in file '{}' on line {}, expected 'X', 'Y' or 'Z' for result, got {}",
                 self.file_name, self.current_line_index, input
             ))),
         }
@@ -179,8 +183,8 @@ mod tests {
     fn test_structure_game_variant_1() {
         let file_name = "../input/test_input.txt";
 
-        let mut game_parser = Parser::build(file_name);
-        let games = game_parser.try_get_games_variant_1();
+        let mut game_variant_1_parser = Parser::build_v1(file_name);
+        let games = game_variant_1_parser.try_get_games();
 
         let expected_games = vec![
             Game::build_v1(Shape::Rock, Shape::Paper),
@@ -194,8 +198,8 @@ mod tests {
     #[test]
     fn test_missing_input_file_game_variant_1() {
         let file_name = "../input/wrong_test_input.txt";
-        let mut game_parser = Parser::build(file_name);
-        let games = game_parser.try_get_games_variant_1();
+        let mut game_variant_1_parser = Parser::build_v1(file_name);
+        let games = game_variant_1_parser.try_get_games();
 
         assert_eq!(
             games,
@@ -210,8 +214,8 @@ mod tests {
     fn test_structure_game_variant_2() {
         let file_name = "../input/test_input.txt";
 
-        let mut game_parser = Parser::build(file_name);
-        let games = game_parser.try_get_games_variant_2();
+        let mut game_variant_2_parser = Parser::build_v2(file_name);
+        let games = game_variant_2_parser.try_get_games();
 
         let expected_games = vec![
             Game::build_v2(Shape::Rock, GameResult::Tie),
@@ -225,8 +229,8 @@ mod tests {
     #[test]
     fn test_missing_input_file_game_variant_2() {
         let file_name = "../input/wrong_test_input.txt";
-        let mut game_parser = Parser::build(file_name);
-        let games = game_parser.try_get_games_variant_1();
+        let mut game_variant_2_parser = Parser::build_v2(file_name);
+        let games = game_variant_2_parser.try_get_games();
 
         assert_eq!(
             games,
@@ -237,4 +241,3 @@ mod tests {
         );
     }
 }
-

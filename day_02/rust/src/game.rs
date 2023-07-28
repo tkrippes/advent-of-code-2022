@@ -1,14 +1,10 @@
 pub mod parser;
 mod result;
 mod shape;
+mod variant;
 
 use result::Result;
 use shape::Shape;
-
-enum GameVariant {
-    V1,
-    V2,
-}
 
 #[derive(Debug, PartialEq)]
 pub enum Game {
