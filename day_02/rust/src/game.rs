@@ -1,15 +1,16 @@
-pub mod result;
-pub mod shape;
+pub mod parser;
+mod result;
+mod shape;
 
 use result::Result;
 use shape::Shape;
 
-pub enum GameVariant {
+enum GameVariant {
     V1,
     V2,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum Game {
     V1 {
         opponent_shape: Shape,
@@ -22,14 +23,14 @@ pub enum Game {
 }
 
 impl Game {
-    pub fn build_v1(opponent_shape: Shape, own_shape: Shape) -> Self {
+    fn build_v1(opponent_shape: Shape, own_shape: Shape) -> Self {
         Game::V1 {
             opponent_shape,
             own_shape,
         }
     }
 
-    pub fn build_v2(opponent_shape: Shape, result: Result) -> Self {
+    fn build_v2(opponent_shape: Shape, result: Result) -> Self {
         Game::V2 {
             opponent_shape,
             result,
