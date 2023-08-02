@@ -11,11 +11,20 @@ impl Item {
             None
         }
     }
+
+    pub fn get_id(&self) -> char {
+        self.id
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn build_item_from_space() {
+        assert_eq!(Item::try_build(' '), None);
+    }
 
     #[test]
     fn build_item_from_lowercase_letters() {
