@@ -26,8 +26,11 @@ impl Rucksack {
         }
     }
 
-    fn get_first_common_item(&self) -> Option<Item> {
-        todo!()
+    fn get_first_common_item(&self) -> Option<&Item> {
+        self.first_compartment
+            .get_items()
+            .iter()
+            .find(|&item| self.second_compartment.contains(item.get_id()))
     }
 }
 
@@ -97,5 +100,51 @@ mod tests {
         for item in "mcnah".chars() {
             assert!(rucksack.second_compartment.contains(item));
         }
+    }
+
+    #[test]
+    fn test_no_common_item() {
+        let items = "abcdefgh";
+        let rucksack = Rucksack::build(items);
+
+        assert_eq!(rucksack.get_first_common_item(), None);
+    }
+
+    #[test]
+    fn test_common_item_only_in_one_compartment() {
+        let items = "aabbccdd";
+        let rucksack = Rucksack::build(items);
+
+        assert_eq!(rucksack.get_first_common_item(), None);
+    }
+
+    #[test]
+    fn test_one_common_item() {
+        let items = "abcdefgd";
+        let rucksack = Rucksack::build(items);
+
+        let first_common_item = rucksack.get_first_common_item();
+        assert_ne!(first_common_item, None);
+        assert_eq!(first_common_item.unwrap().get_id(), 'd');
+    }
+
+    #[test]
+    fn test_two_common_items() {
+        let items = "abcdecgb";
+        let rucksack = Rucksack::build(items);
+
+        let first_common_item = rucksack.get_first_common_item();
+        assert_ne!(first_common_item, None);
+        assert_eq!(first_common_item.unwrap().get_id(), 'b');
+    }
+
+    #[test]
+    fn test_multiple_common_items() {
+        let items = "abcdedba";
+        let rucksack = Rucksack::build(items);
+
+        let first_common_item = rucksack.get_first_common_item();
+        assert_ne!(first_common_item, None);
+        assert_eq!(first_common_item.unwrap().get_id(), 'a');
     }
 }

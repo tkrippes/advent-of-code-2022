@@ -22,6 +22,10 @@ impl Compartment {
         self.items.iter().any(|item| item.get_id() == item_id)
     }
 
+    pub fn get_items(&self) -> &Vec<Item> {
+        &self.items
+    }
+
     fn get_number_of_items(&self, item_id: char) -> usize {
         self.items
             .iter()
