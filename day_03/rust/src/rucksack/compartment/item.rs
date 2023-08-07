@@ -15,6 +15,14 @@ impl Item {
     pub fn get_id(&self) -> char {
         self.id
     }
+
+    pub fn get_priority(&self) -> u32 {
+        if self.id.is_lowercase() {
+            self.id as u32 - 'a' as u32 + 1
+        } else {
+            self.id as u32 - 'A' as u32 + 27
+        }
+    }
 }
 
 #[cfg(test)]
@@ -94,5 +102,35 @@ mod tests {
         assert_eq!(Item::try_build('ü'), None);
         assert_eq!(Item::try_build('ß'), None);
         assert_eq!(Item::try_build('ç'), None);
+    }
+
+    #[test]
+    fn test_lowercase_priorities() {
+        let mut expected_priority = 1;
+
+        for character in 'a'..='z' {
+            assert_eq!(
+                Item::try_build(character).unwrap().get_priority(),
+                expected_priority,
+                "the priority of '{}' is wrong",
+                character
+            );
+            expected_priority += 1;
+        }
+    }
+
+    #[test]
+    fn test_uppercase_priorities() {
+        let mut expected_priority = 27;
+
+        for character in 'A'..='Z' {
+            assert_eq!(
+                Item::try_build(character).unwrap().get_priority(),
+                expected_priority,
+                "the priority of '{}' is wrong",
+                character
+            );
+            expected_priority += 1;
+        }
     }
 }
