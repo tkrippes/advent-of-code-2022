@@ -14,7 +14,7 @@ impl Compartment {
         Compartment { items }
     }
 
-    pub fn len(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.items.len()
     }
 }
@@ -28,7 +28,7 @@ mod tests {
         let items = "";
         let compartment = Compartment::build(items);
 
-        assert_eq!(compartment.len(), 0);
+        assert_eq!(compartment.size(), 0);
     }
 
     #[test]
@@ -36,7 +36,7 @@ mod tests {
         let items = "asfiIOJFdfhspioK";
         let compartment = Compartment::build(items);
 
-        assert_eq!(compartment.len(), items.len());
+        assert_eq!(compartment.size(), items.len());
     }
 
     #[test]
@@ -44,7 +44,7 @@ mod tests {
         let items = "213547685192";
         let compartment = Compartment::build(items);
 
-        assert_eq!(compartment.len(), 0)
+        assert_eq!(compartment.size(), 0)
     }
 
     #[test]
@@ -52,7 +52,7 @@ mod tests {
         let items = "!@#$%^&*()_[]";
         let compartment = Compartment::build(items);
 
-        assert_eq!(compartment.len(), 0);
+        assert_eq!(compartment.size(), 0);
     }
 
     #[test]
@@ -60,6 +60,6 @@ mod tests {
         let items = "èÏüñìäÜÏ";
         let compartment = Compartment::build(items);
 
-        assert_eq!(compartment.len(), 0);
+        assert_eq!(compartment.size(), 0);
     }
 }
