@@ -8,12 +8,12 @@ pub fn get_sum_of_properties(file_name: &str) -> u32 {
     let rucksacks = rucksack_parser.get_rucksacks();
 
     match rucksacks {
-        Some(rucksacks) => rucksacks
+        Ok(rucksacks) => rucksacks
             .iter()
             .filter_map(|rucksack| rucksack.get_first_common_item_of_compartments())
             .map(|item| item.get_priority())
             .sum(),
-        None => 0,
+        Err(_) => 0,
     }
 }
 

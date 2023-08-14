@@ -14,20 +14,20 @@ impl Compartment {
         Compartment { items }
     }
 
-    // only used in unit tests
-    #[allow(dead_code)]
-    pub fn size(&self) -> usize {
-        self.items.len()
+    pub fn get_first_common_item(&self, other: &Compartment) -> Option<&Item> {
+        self.items
+            .iter()
+            .find(|&item| other.contains(item.get_id()))
     }
 
     pub fn contains(&self, item_id: char) -> bool {
         self.items.iter().any(|item| item.get_id() == item_id)
     }
 
-    pub fn get_first_common_item(&self, other: &Compartment) -> Option<&Item> {
-        self.items
-            .iter()
-            .find(|&item| other.contains(item.get_id()))
+    // only used in unit tests
+    #[allow(dead_code)]
+    pub fn size(&self) -> usize {
+        self.items.len()
     }
 
     // only used in unit tests

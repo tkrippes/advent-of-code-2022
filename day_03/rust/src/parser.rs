@@ -1,8 +1,40 @@
 use crate::rucksack::Rucksack;
 
-use std::fs;
-use std::io::{self, BufRead};
-use std::path;
+use std::{
+    error::Error,
+    fmt, fs,
+    io::{self, BufRead},
+    path,
+};
+
+#[derive(Debug, PartialEq)]
+pub enum ParsingError {
+    IOError { cause: String },
+    ParsingRucksackError,
+}
+
+impl fmt::Display for ParsingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ParsingError::IOError { cause } => {
+                write!(f, "Error while parsing, got IO error, cause: {}", cause)
+            }
+            ParsingError::ParsingRucksackError => {
+                write!(f, "Error while parsing, got rucksack error")
+            }
+        }
+    }
+}
+
+impl Error for ParsingError {}
+
+impl From<io::Error> for ParsingError {
+    fn from(err: io::Error) -> Self {
+        ParsingError::IOError {
+            cause: err.to_string(),
+        }
+    }
+}
 
 pub struct Parser {
     file_name: String,
@@ -15,29 +47,47 @@ impl Parser {
         }
     }
 
-    pub fn get_rucksacks(&self) -> Option<Vec<Rucksack>> {
+    pub fn get_rucksacks(&self) -> Result<Vec<Rucksack>, ParsingError> {
         let file = self.try_open_file()?;
 
-        let rucksacks = file
+        let rucksacks_results: Vec<Result<Rucksack, ParsingError>> = file
             .lines()
-            .filter_map(|line| self.get_line(line))
-            .map(|line| Rucksack::build(&line))
+            .map(|line| self.try_get_line(line))
+            .map(|line| self.try_build_rucksack(line))
             .collect();
 
-        Some(rucksacks)
+        let mut rucksacks = Vec::new();
+        for result in rucksacks_results {
+            match result {
+                Ok(rucksack) => rucksacks.push(rucksack),
+                Err(err) => return Err(err),
+            };
+        }
+
+        Ok(rucksacks)
     }
 
-    fn try_open_file(&self) -> Option<io::BufReader<fs::File>> {
+    fn try_open_file(&self) -> Result<io::BufReader<fs::File>, ParsingError> {
         match fs::File::open(path::Path::new(&self.file_name)) {
-            Ok(file) => Some(io::BufReader::new(file)),
-            Err(_) => None,
+            Ok(file) => Ok(io::BufReader::new(file)),
+            Err(err) => Err(ParsingError::from(err)),
         }
     }
 
-    fn get_line(&self, line: Result<String, io::Error>) -> Option<String> {
+    fn try_get_line(&self, line: Result<String, io::Error>) -> Result<String, ParsingError> {
         match line {
-            Ok(line) => Some(line.trim().to_string()),
-            Err(_) => None,
+            Ok(line) => Ok(line.trim().to_string()),
+            Err(err) => Err(ParsingError::from(err)),
+        }
+    }
+
+    fn try_build_rucksack(
+        &self,
+        line: Result<String, ParsingError>,
+    ) -> Result<Rucksack, ParsingError> {
+        match line {
+            Ok(line) => Ok(Rucksack::build(&line)),
+            Err(err) => Err(err),
         }
     }
 }
@@ -62,7 +112,7 @@ mod tests {
             Rucksack::build("CrZsJsPPZsGzwwsLwLmpwMDw"),
         ];
 
-        assert_eq!(rucksacks, Some(expected_rucksacks));
+        assert_eq!(rucksacks, Ok(expected_rucksacks));
     }
 
     #[test]
@@ -72,6 +122,11 @@ mod tests {
         let rucksack_parser = Parser::build(file_name);
         let rucksacks = rucksack_parser.get_rucksacks();
 
-        assert_eq!(rucksacks, None);
+        assert_eq!(
+            rucksacks,
+            Err(ParsingError::IOError {
+                cause: String::from("No such file or directory (os error 2)")
+            })
+        );
     }
 }
