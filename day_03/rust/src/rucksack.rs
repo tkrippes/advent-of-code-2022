@@ -3,13 +3,14 @@ mod compartment;
 use compartment::item::Item;
 use compartment::Compartment;
 
-struct Rucksack {
+#[derive(Debug, PartialEq)]
+pub struct Rucksack {
     first_compartment: Compartment,
     second_compartment: Compartment,
 }
 
 impl Rucksack {
-    fn build(items: &str) -> Self {
+    pub fn build(items: &str) -> Self {
         let half_position = if items.len() % 2 == 0 {
             items.len() / 2
         } else {
