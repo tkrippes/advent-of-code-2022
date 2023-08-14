@@ -1,14 +1,39 @@
+use std::{error, fmt};
+
+#[derive(Debug, PartialEq)]
+pub struct InvalidCharacterError {
+    invalid_character: char,
+}
+
+impl fmt::Display for InvalidCharacterError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was {}",
+            self.invalid_character
+        )
+    }
+}
+
+impl error::Error for InvalidCharacterError {}
+
+impl InvalidCharacterError {
+    fn build(invalid_character: char) -> Self {
+        InvalidCharacterError { invalid_character }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Item {
     id: char,
 }
 
 impl Item {
-    pub fn try_build(id: char) -> Option<Self> {
+    pub fn try_build(id: char) -> Result<Self, InvalidCharacterError> {
         if id.is_ascii_alphabetic() {
-            Some(Item { id })
+            Ok(Item { id })
         } else {
-            None
+            Err(InvalidCharacterError::build(id))
         }
     }
 
@@ -31,7 +56,12 @@ mod tests {
 
     #[test]
     fn build_item_from_space() {
-        assert_eq!(Item::try_build(' '), None);
+        assert_eq!(
+            Item::try_build(' '),
+            Err(InvalidCharacterError {
+                invalid_character: ' '
+            })
+        );
     }
 
     #[test]
@@ -39,7 +69,7 @@ mod tests {
         for lowercase_letter in 'a'..='z' {
             assert_eq!(
                 Item::try_build(lowercase_letter),
-                Some(Item {
+                Ok(Item {
                     id: lowercase_letter
                 })
             );
@@ -51,7 +81,7 @@ mod tests {
         for uppercase_letter in 'A'..='Z' {
             assert_eq!(
                 Item::try_build(uppercase_letter),
-                Some(Item {
+                Ok(Item {
                     id: uppercase_letter
                 })
             );
@@ -61,47 +91,37 @@ mod tests {
     #[test]
     fn build_item_from_digit() {
         for digit in '0'..='9' {
-            assert_eq!(Item::try_build(digit), None);
+            assert_eq!(
+                Item::try_build(digit),
+                Err(InvalidCharacterError {
+                    invalid_character: digit,
+                })
+            );
         }
     }
 
     #[test]
     fn build_item_from_special_signs() {
-        assert_eq!(Item::try_build(' '), None);
-        assert_eq!(Item::try_build('!'), None);
-        assert_eq!(Item::try_build('@'), None);
-        assert_eq!(Item::try_build('#'), None);
-        assert_eq!(Item::try_build('$'), None);
-        assert_eq!(Item::try_build('%'), None);
-        assert_eq!(Item::try_build('^'), None);
-        assert_eq!(Item::try_build('&'), None);
-        assert_eq!(Item::try_build('*'), None);
-        assert_eq!(Item::try_build('('), None);
-        assert_eq!(Item::try_build(')'), None);
-        assert_eq!(Item::try_build('_'), None);
-        assert_eq!(Item::try_build('-'), None);
-        assert_eq!(Item::try_build('+'), None);
-        assert_eq!(Item::try_build('='), None);
-        assert_eq!(Item::try_build('{'), None);
-        assert_eq!(Item::try_build('}'), None);
-        assert_eq!(Item::try_build('['), None);
-        assert_eq!(Item::try_build(']'), None);
+        for special_sign in " !@#$%^&*()_-+={}[]".chars() {
+            assert_eq!(
+                Item::try_build(special_sign),
+                Err(InvalidCharacterError {
+                    invalid_character: special_sign,
+                })
+            )
+        }
     }
 
     #[test]
     fn build_item_from_special_letters() {
-        assert_eq!(Item::try_build('è'), None);
-        assert_eq!(Item::try_build('ñ'), None);
-        assert_eq!(Item::try_build('à'), None);
-        assert_eq!(Item::try_build('ù'), None);
-        assert_eq!(Item::try_build('é'), None);
-        assert_eq!(Item::try_build('á'), None);
-        assert_eq!(Item::try_build('ú'), None);
-        assert_eq!(Item::try_build('ä'), None);
-        assert_eq!(Item::try_build('ö'), None);
-        assert_eq!(Item::try_build('ü'), None);
-        assert_eq!(Item::try_build('ß'), None);
-        assert_eq!(Item::try_build('ç'), None);
+        for special_letter in "èñàùéáúäöüßç".chars() {
+            assert_eq!(
+                Item::try_build(special_letter),
+                Err(InvalidCharacterError {
+                    invalid_character: special_letter,
+                })
+            )
+        }
     }
 
     #[test]

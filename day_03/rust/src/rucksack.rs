@@ -1,7 +1,44 @@
 mod compartment;
 
+use std::{error, fmt};
+
 use compartment::item::Item;
-use compartment::Compartment;
+use compartment::{Compartment, CompartmentError};
+
+#[derive(Debug, PartialEq)]
+pub enum RucksackError {
+    FirstCompartmentError { cause: String },
+    SecondCompartmentError { cause: String },
+}
+
+impl fmt::Display for RucksackError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            RucksackError::FirstCompartmentError { cause } => {
+                write!(f, "First compartment error, cause: {}", cause)
+            }
+            RucksackError::SecondCompartmentError { cause } => {
+                write!(f, "Second compartment error, cause: {}", cause)
+            }
+        }
+    }
+}
+
+impl error::Error for RucksackError {}
+
+impl RucksackError {
+    fn build_first_compartment_error(err: CompartmentError) -> Self {
+        RucksackError::FirstCompartmentError {
+            cause: err.to_string(),
+        }
+    }
+
+    fn build_second_compartment_error(err: CompartmentError) -> Self {
+        RucksackError::SecondCompartmentError {
+            cause: err.to_string(),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Rucksack {
@@ -10,7 +47,7 @@ pub struct Rucksack {
 }
 
 impl Rucksack {
-    pub fn build(items: &str) -> Self {
+    pub fn try_build(items: &str) -> Result<Self, RucksackError> {
         let half_position = if items.len() % 2 == 0 {
             items.len() / 2
         } else {
@@ -18,13 +55,20 @@ impl Rucksack {
         };
         let (first_items_half, second_items_half) = items.split_at(half_position);
 
-        let first_compartment = Compartment::build(first_items_half);
-        let second_compartment = Compartment::build(second_items_half);
+        let first_compartment = match Compartment::try_build(first_items_half) {
+            Ok(first_compartment) => first_compartment,
+            Err(err) => return Err(RucksackError::build_first_compartment_error(err)),
+        };
 
-        Rucksack {
+        let second_compartment = match Compartment::try_build(second_items_half) {
+            Ok(second_compartment) => second_compartment,
+            Err(err) => return Err(RucksackError::build_second_compartment_error(err)),
+        };
+
+        Ok(Rucksack {
             first_compartment,
             second_compartment,
-        }
+        })
     }
 
     pub fn get_first_common_item_of_compartments(&self) -> Option<&Item> {
@@ -40,7 +84,10 @@ mod tests {
     #[test]
     fn build_rucksack_with_no_items() {
         let items = "";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.first_compartment.size(), 0);
         assert_eq!(rucksack.second_compartment.size(), 0);
@@ -49,7 +96,10 @@ mod tests {
     #[test]
     fn build_rucksack_with_one_item() {
         let items = "c";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.first_compartment.size(), 1);
         assert_eq!(rucksack.second_compartment.size(), 0);
@@ -60,7 +110,10 @@ mod tests {
     #[test]
     fn build_rucksack_with_two_items() {
         let items = "ca";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.first_compartment.size(), 1);
         assert_eq!(rucksack.second_compartment.size(), 1);
@@ -72,7 +125,10 @@ mod tests {
     #[test]
     fn build_rucksack_with_odd_number_of_items() {
         let items = "adflvmd";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.first_compartment.size(), 4);
         assert_eq!(rucksack.second_compartment.size(), 3);
@@ -88,7 +144,10 @@ mod tests {
     #[test]
     fn build_rucksack_with_even_number_of_items() {
         let items = "aidjrmcnah";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.first_compartment.size(), 5);
         assert_eq!(rucksack.second_compartment.size(), 5);
@@ -104,7 +163,10 @@ mod tests {
     #[test]
     fn test_no_common_item() {
         let items = "abcdefgh";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
     }
@@ -112,7 +174,10 @@ mod tests {
     #[test]
     fn test_common_item_only_in_one_compartment() {
         let items = "aabbccdd";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
     }
@@ -120,7 +185,10 @@ mod tests {
     #[test]
     fn test_one_common_item() {
         let items = "abcdefgd";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);
@@ -130,7 +198,10 @@ mod tests {
     #[test]
     fn test_two_common_items() {
         let items = "abcdecgb";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);
@@ -140,7 +211,10 @@ mod tests {
     #[test]
     fn test_multiple_common_items() {
         let items = "abcdedba";
-        let rucksack = Rucksack::build(items);
+        let rucksack = Rucksack::try_build(items);
+
+        assert!(rucksack.is_ok());
+        let rucksack = rucksack.unwrap();
 
         let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);

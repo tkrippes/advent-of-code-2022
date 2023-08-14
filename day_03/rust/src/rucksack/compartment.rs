@@ -1,6 +1,34 @@
 pub mod item;
 
-use item::Item;
+use item::{InvalidCharacterError, Item};
+use std::{error, fmt};
+
+#[derive(Debug, PartialEq)]
+pub struct CompartmentError {
+    position: usize,
+    cause: String,
+}
+
+impl fmt::Display for CompartmentError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Invalid compartment, error at position {}, cause: {}",
+            self.position, self.cause
+        )
+    }
+}
+
+impl error::Error for CompartmentError {}
+
+impl CompartmentError {
+    fn build(position: usize, err: InvalidCharacterError) -> Self {
+        CompartmentError {
+            position,
+            cause: err.to_string(),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Compartment {
@@ -8,10 +36,19 @@ pub struct Compartment {
 }
 
 impl Compartment {
-    pub fn build(items: &str) -> Self {
-        let items: Vec<Item> = items.chars().filter_map(Item::try_build).collect();
+    pub fn try_build(items: &str) -> Result<Self, CompartmentError> {
+        let items_results: Vec<Result<Item, InvalidCharacterError>> =
+            items.chars().map(Item::try_build).collect();
 
-        Compartment { items }
+        let mut items = Vec::new();
+        for (position, result) in items_results.into_iter().enumerate() {
+            match result {
+                Ok(item) => items.push(item),
+                Err(err) => return Err(CompartmentError::build(position, err)),
+            }
+        }
+
+        Ok(Compartment { items })
     }
 
     pub fn get_first_common_item(&self, other: &Compartment) -> Option<&Item> {
@@ -47,7 +84,10 @@ mod tests {
     #[test]
     fn build_compartment_from_nothing() {
         let items = "";
-        let compartment = Compartment::build(items);
+        let compartment = Compartment::try_build(items);
+
+        assert!(compartment.is_ok());
+        let compartment = compartment.unwrap();
 
         assert_eq!(compartment.size(), 0);
     }
@@ -55,7 +95,10 @@ mod tests {
     #[test]
     fn build_compartment_from_letters_no_duplicates() {
         let items = "aSfiIOJFdhspoK";
-        let compartment = Compartment::build(items);
+        let compartment = Compartment::try_build(items);
+
+        assert!(compartment.is_ok());
+        let compartment = compartment.unwrap();
 
         assert_eq!(compartment.size(), items.len());
 
@@ -72,7 +115,10 @@ mod tests {
     #[test]
     fn build_compartment_from_letters_with_duplicates() {
         let items = "TiiaTAiATaTAiT";
-        let compartment = Compartment::build(items);
+        let compartment = Compartment::try_build(items);
+
+        assert!(compartment.is_ok());
+        let compartment = compartment.unwrap();
 
         assert_eq!(compartment.size(), items.len());
 
@@ -101,24 +147,48 @@ mod tests {
     #[test]
     fn build_compartment_from_digits() {
         let items = "213547685192";
-        let compartment = Compartment::build(items);
+        let compartment = Compartment::try_build(items);
 
-        assert_eq!(compartment.size(), 0)
+        assert_eq!(
+            compartment,
+            Err(CompartmentError {
+                position: 0,
+                cause: String::from(
+                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was 2"
+                )
+            })
+        )
     }
 
     #[test]
     fn build_compartment_from_special_signs() {
         let items = "!@#$%^&*()_[]";
-        let compartment = Compartment::build(items);
+        let compartment = Compartment::try_build(items);
 
-        assert_eq!(compartment.size(), 0);
+        assert_eq!(
+            compartment,
+            Err(CompartmentError {
+                position: 0,
+                cause: String::from(
+                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was !"
+                )
+            })
+        )
     }
 
     #[test]
     fn build_compartment_from_special_letters() {
-        let items = "èÏüñìäÜÏ";
-        let compartment = Compartment::build(items);
+        let items = "abcèÏüñìäÜÏ";
+        let compartment = Compartment::try_build(items);
 
-        assert_eq!(compartment.size(), 0);
+        assert_eq!(
+            compartment,
+            Err(CompartmentError {
+                position: 3,
+                cause: String::from(
+                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was è"
+                )
+            })
+        )
     }
 }

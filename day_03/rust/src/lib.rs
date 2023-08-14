@@ -5,7 +5,7 @@ use parser::Parser;
 
 pub fn get_sum_of_properties(file_name: &str) -> u32 {
     let rucksack_parser = Parser::build(file_name);
-    let rucksacks = rucksack_parser.get_rucksacks();
+    let rucksacks = rucksack_parser.try_get_rucksacks();
 
     match rucksacks {
         Ok(rucksacks) => rucksacks
@@ -13,7 +13,10 @@ pub fn get_sum_of_properties(file_name: &str) -> u32 {
             .filter_map(|rucksack| rucksack.get_first_common_item_of_compartments())
             .map(|item| item.get_priority())
             .sum(),
-        Err(_) => 0,
+        Err(err) => {
+            println!("Error while getting sum of properties: {}", err);
+            0
+        }
     }
 }
 
