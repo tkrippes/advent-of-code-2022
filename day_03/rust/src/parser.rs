@@ -4,7 +4,7 @@ use std::fs;
 use std::io::{self, BufRead};
 use std::path;
 
-struct Parser {
+pub struct Parser {
     file_name: String,
 }
 

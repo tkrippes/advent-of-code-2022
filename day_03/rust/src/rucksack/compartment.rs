@@ -14,6 +14,8 @@ impl Compartment {
         Compartment { items }
     }
 
+    // only used in unit tests
+    #[allow(dead_code)]
     pub fn size(&self) -> usize {
         self.items.len()
     }
@@ -28,6 +30,8 @@ impl Compartment {
             .find(|&item| other.contains(item.get_id()))
     }
 
+    // only used in unit tests
+    #[allow(dead_code)]
     fn get_number_of_items_with_id(&self, item_id: char) -> usize {
         self.items
             .iter()

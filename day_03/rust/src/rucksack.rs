@@ -27,7 +27,7 @@ impl Rucksack {
         }
     }
 
-    fn get_first_common_item_of_compartments(&self) -> Option<&Item> {
+    pub fn get_first_common_item_of_compartments(&self) -> Option<&Item> {
         self.first_compartment
             .get_first_common_item(&self.second_compartment)
     }
