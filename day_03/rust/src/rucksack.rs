@@ -26,11 +26,9 @@ impl Rucksack {
         }
     }
 
-    fn get_first_common_item(&self) -> Option<&Item> {
+    fn get_first_common_item_of_compartments(&self) -> Option<&Item> {
         self.first_compartment
-            .get_items()
-            .iter()
-            .find(|&item| self.second_compartment.contains(item.get_id()))
+            .get_first_common_item(&self.second_compartment)
     }
 }
 
@@ -107,7 +105,7 @@ mod tests {
         let items = "abcdefgh";
         let rucksack = Rucksack::build(items);
 
-        assert_eq!(rucksack.get_first_common_item(), None);
+        assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
     }
 
     #[test]
@@ -115,7 +113,7 @@ mod tests {
         let items = "aabbccdd";
         let rucksack = Rucksack::build(items);
 
-        assert_eq!(rucksack.get_first_common_item(), None);
+        assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
     }
 
     #[test]
@@ -123,7 +121,7 @@ mod tests {
         let items = "abcdefgd";
         let rucksack = Rucksack::build(items);
 
-        let first_common_item = rucksack.get_first_common_item();
+        let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);
         assert_eq!(first_common_item.unwrap().get_id(), 'd');
     }
@@ -133,7 +131,7 @@ mod tests {
         let items = "abcdecgb";
         let rucksack = Rucksack::build(items);
 
-        let first_common_item = rucksack.get_first_common_item();
+        let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);
         assert_eq!(first_common_item.unwrap().get_id(), 'b');
     }
@@ -143,7 +141,7 @@ mod tests {
         let items = "abcdedba";
         let rucksack = Rucksack::build(items);
 
-        let first_common_item = rucksack.get_first_common_item();
+        let first_common_item = rucksack.get_first_common_item_of_compartments();
         assert_ne!(first_common_item, None);
         assert_eq!(first_common_item.unwrap().get_id(), 'a');
     }

@@ -22,11 +22,13 @@ impl Compartment {
         self.items.iter().any(|item| item.get_id() == item_id)
     }
 
-    pub fn get_items(&self) -> &Vec<Item> {
-        &self.items
+    pub fn get_first_common_item(&self, other: &Compartment) -> Option<&Item> {
+        self.items
+            .iter()
+            .find(|&item| other.contains(item.get_id()))
     }
 
-    fn get_number_of_items(&self, item_id: char) -> usize {
+    fn get_number_of_items_with_id(&self, item_id: char) -> usize {
         self.items
             .iter()
             .filter(|item| item.get_id() == item_id)
@@ -55,7 +57,7 @@ mod tests {
 
         for item in items.chars() {
             assert_eq!(
-                compartment.get_number_of_items(item),
+                compartment.get_number_of_items_with_id(item),
                 1,
                 "the number of items for '{}' is wrong",
                 item
@@ -71,22 +73,22 @@ mod tests {
         assert_eq!(compartment.size(), items.len());
 
         assert_eq!(
-            compartment.get_number_of_items('a'),
+            compartment.get_number_of_items_with_id('a'),
             2,
             "the number of items for 'a' is wrong"
         );
         assert_eq!(
-            compartment.get_number_of_items('A'),
+            compartment.get_number_of_items_with_id('A'),
             3,
             "the number of items for 'A' is wrong"
         );
         assert_eq!(
-            compartment.get_number_of_items('i'),
+            compartment.get_number_of_items_with_id('i'),
             4,
             "the number of items for 'i' is wrong"
         );
         assert_eq!(
-            compartment.get_number_of_items('T'),
+            compartment.get_number_of_items_with_id('T'),
             5,
             "the number of items for 'T' is wrong"
         );
