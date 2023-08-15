@@ -78,10 +78,38 @@ impl Rucksack {
         self.first_compartment
             .get_first_common_item(&self.second_compartment)
     }
+
+    pub fn get_common_items(&self, other: &Rucksack) -> Option<Vec<Item>> {
+        let items = self.get_all_items();
+        let other_items = other.get_all_items();
+
+        // TODO add to own function (helper module?)
+        let mut common_items = Vec::new();
+        for item in items {
+            if !common_items.contains(&item) && other_items.contains(&item) {
+                common_items.push(item);
+            }
+        }
+
+        if common_items.is_empty() {
+            None
+        } else {
+            Some(common_items)
+        }
+    }
+
+    // TODO can this be simplified?
+    fn get_all_items(&self) -> Vec<Item> {
+        let mut items = self.first_compartment.get_cloned_items();
+        items.append(&mut self.second_compartment.get_cloned_items());
+        items
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
 
     #[test]
@@ -147,5 +175,68 @@ mod tests {
         };
 
         assert_eq!(rucksack, Ok(expected_rucksack));
+    }
+
+    #[test]
+    fn test_no_common_items() {
+        let ids_1 = "abcd";
+        let ids_2 = "efgh";
+        let rucksack_1 = Rucksack::try_build(ids_1).unwrap();
+        let rucksack_2 = Rucksack::try_build(ids_2).unwrap();
+
+        assert_eq!(rucksack_1.get_common_items(&rucksack_2), None);
+    }
+
+    #[test]
+    fn test_one_common_item() {
+        let ids_1 = "abcd";
+        let ids_2 = "defg";
+        let rucksack_1 = Rucksack::try_build(ids_1).unwrap();
+        let rucksack_2 = Rucksack::try_build(ids_2).unwrap();
+
+        let expected_items = vec![Item::try_build('d').unwrap()];
+
+        assert_eq!(
+            rucksack_1.get_common_items(&rucksack_2),
+            Some(expected_items)
+        );
+    }
+
+    #[test]
+    fn test_multiple_common_items() {
+        let ids_1 = "abcd";
+        let ids_2 = "bcde";
+        let rucksack_1 = Rucksack::try_build(ids_1).unwrap();
+        let rucksack_2 = Rucksack::try_build(ids_2).unwrap();
+
+        let expected_items = vec![
+            Item::try_build('b').unwrap(),
+            Item::try_build('c').unwrap(),
+            Item::try_build('d').unwrap(),
+        ];
+
+        assert_eq!(
+            rucksack_1.get_common_items(&rucksack_2),
+            Some(expected_items)
+        );
+    }
+
+    #[test]
+    fn test_multiple_same_common_items() {
+        let ids_1 = "aabccd";
+        let ids_2 = "bbcdde";
+        let rucksack_1 = Rucksack::try_build(ids_1).unwrap();
+        let rucksack_2 = Rucksack::try_build(ids_2).unwrap();
+
+        let expected_items = vec![
+            Item::try_build('b').unwrap(),
+            Item::try_build('c').unwrap(),
+            Item::try_build('d').unwrap(),
+        ];
+
+        assert_eq!(
+            rucksack_1.get_common_items(&rucksack_2),
+            Some(expected_items)
+        );
     }
 }

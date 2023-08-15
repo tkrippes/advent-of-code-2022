@@ -56,6 +56,11 @@ impl Compartment {
     fn contains(&self, item_id: char) -> bool {
         self.items.iter().any(|item| item.get_id() == item_id)
     }
+
+    // TODO check alternative without clone
+    pub fn get_cloned_items(&self) -> Vec<Item> {
+        self.items.clone()
+    }
 }
 
 #[cfg(test)]
@@ -161,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_no_common_item() {
+    fn test_no_common_items() {
         let ids_1 = "abcd";
         let ids_2 = "efgh";
         let compartment_1 = Compartment::try_build(ids_1).unwrap();
