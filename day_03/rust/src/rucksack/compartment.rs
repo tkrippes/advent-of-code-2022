@@ -57,8 +57,7 @@ impl Compartment {
         self.items.iter().any(|item| item.get_id() == item_id)
     }
 
-    // TODO check alternative without clone
-    pub fn get_cloned_items(&self) -> Vec<Item> {
+    pub fn get_items(&self) -> Vec<Item> {
         self.items.clone()
     }
 }

@@ -2,6 +2,7 @@ mod parser;
 mod rucksack;
 
 use parser::Parser;
+use rucksack::Rucksack;
 
 pub fn get_sum_of_properties_1(file_name: &str) -> u32 {
     let rucksack_parser = Parser::build(file_name);
@@ -34,36 +35,19 @@ pub fn get_sum_of_properties_2(file_name: &str) -> u32 {
 
     let mut sum = 0;
 
-    // TODO more elegant?
     for i in (0..rucksacks.len()).step_by(3) {
         let rucksack_1 = &rucksacks[i];
         let rucksack_2 = &rucksacks[i + 1];
         let rucksack_3 = &rucksacks[i + 2];
 
-        let common_items_1 = match rucksack_1.get_common_items(rucksack_2) {
+        let common_items = match Rucksack::get_common_items(rucksack_1, rucksack_2, rucksack_3) {
             Some(common_items) => common_items,
             None => continue,
         };
 
-        let common_items_2 = match rucksack_2.get_common_items(rucksack_3) {
-            Some(common_items) => common_items,
-            None => continue,
-        };
-
-        // TODO use common items from helper module (TBD)
-        let mut common_items = Vec::new();
-        for item in common_items_1 {
-            if !common_items.contains(&item) && common_items_2.contains(&item) {
-                common_items.push(item);
-            }
+        for common_item in common_items {
+            sum += common_item.get_priority();
         }
-
-        // TODO more elegant?
-        if common_items.len() != 1 {
-            continue;
-        }
-
-        sum += common_items[0].get_priority();
     }
 
     sum

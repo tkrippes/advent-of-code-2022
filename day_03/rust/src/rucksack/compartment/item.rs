@@ -23,7 +23,6 @@ impl InvalidCharacterError {
     }
 }
 
-// TODO check if clone is really necessary
 #[derive(Clone, Debug, PartialEq)]
 pub struct Item {
     id: char,
