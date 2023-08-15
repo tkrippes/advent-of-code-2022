@@ -86,141 +86,66 @@ mod tests {
 
     #[test]
     fn build_rucksack_with_no_items() {
-        let items = "";
-        let rucksack = Rucksack::try_build(items);
+        let ids = "";
+        let rucksack = Rucksack::try_build(ids);
 
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
+        let expected_rucksack = Rucksack {
+            first_compartment: Compartment::try_build("").unwrap(),
+            second_compartment: Compartment::try_build("").unwrap(),
+        };
 
-        assert_eq!(rucksack.first_compartment.size(), 0);
-        assert_eq!(rucksack.second_compartment.size(), 0);
+        assert_eq!(rucksack, Ok(expected_rucksack));
     }
 
     #[test]
     fn build_rucksack_with_one_item() {
-        let items = "c";
-        let rucksack = Rucksack::try_build(items);
+        let ids = "c";
+        let rucksack = Rucksack::try_build(ids);
 
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
+        let expected_rucksack = Rucksack {
+            first_compartment: Compartment::try_build("c").unwrap(),
+            second_compartment: Compartment::try_build("").unwrap(),
+        };
 
-        assert_eq!(rucksack.first_compartment.size(), 1);
-        assert_eq!(rucksack.second_compartment.size(), 0);
-
-        assert!(rucksack.first_compartment.contains('c'))
+        assert_eq!(rucksack, Ok(expected_rucksack));
     }
 
     #[test]
     fn build_rucksack_with_two_items() {
-        let items = "ca";
-        let rucksack = Rucksack::try_build(items);
+        let ids = "ca";
+        let rucksack = Rucksack::try_build(ids);
 
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
+        let expected_rucksack = Rucksack {
+            first_compartment: Compartment::try_build("c").unwrap(),
+            second_compartment: Compartment::try_build("a").unwrap(),
+        };
 
-        assert_eq!(rucksack.first_compartment.size(), 1);
-        assert_eq!(rucksack.second_compartment.size(), 1);
-
-        assert!(rucksack.first_compartment.contains('c'));
-        assert!(rucksack.second_compartment.contains('a'));
+        assert_eq!(rucksack, Ok(expected_rucksack));
     }
 
     #[test]
     fn build_rucksack_with_odd_number_of_items() {
-        let items = "adflvmd";
-        let rucksack = Rucksack::try_build(items);
+        let ids = "adflvmd";
+        let rucksack = Rucksack::try_build(ids);
 
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
+        let expected_rucksack = Rucksack {
+            first_compartment: Compartment::try_build("adfl").unwrap(),
+            second_compartment: Compartment::try_build("vmd").unwrap(),
+        };
 
-        assert_eq!(rucksack.first_compartment.size(), 4);
-        assert_eq!(rucksack.second_compartment.size(), 3);
-
-        for item in "adfl".chars() {
-            assert!(rucksack.first_compartment.contains(item));
-        }
-        for item in "vmd".chars() {
-            assert!(rucksack.second_compartment.contains(item));
-        }
+        assert_eq!(rucksack, Ok(expected_rucksack));
     }
 
     #[test]
     fn build_rucksack_with_even_number_of_items() {
-        let items = "aidjrmcnah";
-        let rucksack = Rucksack::try_build(items);
+        let ids = "aidjrmcnah";
+        let rucksack = Rucksack::try_build(ids);
 
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
+        let expected_rucksack = Rucksack {
+            first_compartment: Compartment::try_build("aidjr").unwrap(),
+            second_compartment: Compartment::try_build("mcnah").unwrap(),
+        };
 
-        assert_eq!(rucksack.first_compartment.size(), 5);
-        assert_eq!(rucksack.second_compartment.size(), 5);
-
-        for item in "aidjr".chars() {
-            assert!(rucksack.first_compartment.contains(item));
-        }
-        for item in "mcnah".chars() {
-            assert!(rucksack.second_compartment.contains(item));
-        }
-    }
-
-    #[test]
-    fn test_no_common_item() {
-        let items = "abcdefgh";
-        let rucksack = Rucksack::try_build(items);
-
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
-
-        assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
-    }
-
-    #[test]
-    fn test_common_item_only_in_one_compartment() {
-        let items = "aabbccdd";
-        let rucksack = Rucksack::try_build(items);
-
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
-
-        assert_eq!(rucksack.get_first_common_item_of_compartments(), None);
-    }
-
-    #[test]
-    fn test_one_common_item() {
-        let items = "abcdefgd";
-        let rucksack = Rucksack::try_build(items);
-
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
-
-        let first_common_item = rucksack.get_first_common_item_of_compartments();
-        assert_ne!(first_common_item, None);
-        assert_eq!(first_common_item.unwrap().get_id(), 'd');
-    }
-
-    #[test]
-    fn test_two_common_items() {
-        let items = "abcdecgb";
-        let rucksack = Rucksack::try_build(items);
-
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
-
-        let first_common_item = rucksack.get_first_common_item_of_compartments();
-        assert_ne!(first_common_item, None);
-        assert_eq!(first_common_item.unwrap().get_id(), 'b');
-    }
-
-    #[test]
-    fn test_multiple_common_items() {
-        let items = "abcdedba";
-        let rucksack = Rucksack::try_build(items);
-
-        assert!(rucksack.is_ok());
-        let rucksack = rucksack.unwrap();
-
-        let first_common_item = rucksack.get_first_common_item_of_compartments();
-        assert_ne!(first_common_item, None);
-        assert_eq!(first_common_item.unwrap().get_id(), 'a');
+        assert_eq!(rucksack, Ok(expected_rucksack));
     }
 }

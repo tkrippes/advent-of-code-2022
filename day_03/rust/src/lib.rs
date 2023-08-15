@@ -25,8 +25,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_result() {
+    fn test_valid_file() {
         let file_name = "../input/test_input.txt";
         assert_eq!(get_sum_of_properties(file_name), 157);
+    }
+
+    #[test]
+    fn test_missing_file() {
+        let file_name = "../input/missing_test_input.txt";
+        assert_eq!(get_sum_of_properties(file_name), 0);
+    }
+
+    #[test]
+    fn test_invalid_file() {
+        let file_name = "../input/invalid_test_input.txt";
+        assert_eq!(get_sum_of_properties(file_name), 0);
     }
 }

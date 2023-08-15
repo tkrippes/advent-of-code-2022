@@ -53,23 +53,8 @@ impl Compartment {
         self.items.iter().find(|item| other.contains(item.get_id()))
     }
 
-    pub fn contains(&self, item_id: char) -> bool {
+    fn contains(&self, item_id: char) -> bool {
         self.items.iter().any(|item| item.get_id() == item_id)
-    }
-
-    // only used in unit tests
-    #[allow(dead_code)]
-    pub fn size(&self) -> usize {
-        self.items.len()
-    }
-
-    // only used in unit tests
-    #[allow(dead_code)]
-    fn get_number_of_items_with_id(&self, item_id: char) -> usize {
-        self.items
-            .iter()
-            .filter(|item| item.get_id() == item_id)
-            .count()
     }
 }
 
@@ -79,71 +64,42 @@ mod tests {
 
     #[test]
     fn build_compartment_from_nothing() {
-        let items = "";
-        let compartment = Compartment::try_build(items);
+        let ids = "";
+        let compartment = Compartment::try_build(ids);
 
-        assert!(compartment.is_ok());
-        let compartment = compartment.unwrap();
+        let expected_compartment = Compartment { items: vec![] };
 
-        assert_eq!(compartment.size(), 0);
+        assert_eq!(compartment, Ok(expected_compartment));
     }
 
     #[test]
     fn build_compartment_from_letters_no_duplicates() {
-        let items = "aSfiIOJFdhspoK";
-        let compartment = Compartment::try_build(items);
+        let ids = "aSfiIOJFdhspoK";
+        let compartment = Compartment::try_build(ids);
 
-        assert!(compartment.is_ok());
-        let compartment = compartment.unwrap();
+        let expected_compartment = Compartment {
+            items: ids.chars().map(|id| Item::try_build(id).unwrap()).collect(),
+        };
 
-        assert_eq!(compartment.size(), items.len());
-
-        for item in items.chars() {
-            assert_eq!(
-                compartment.get_number_of_items_with_id(item),
-                1,
-                "the number of items for '{}' is wrong",
-                item
-            );
-        }
+        assert_eq!(compartment, Ok(expected_compartment));
     }
 
     #[test]
     fn build_compartment_from_letters_with_duplicates() {
-        let items = "TiiaTAiATaTAiT";
-        let compartment = Compartment::try_build(items);
+        let ids = "TiiaTAiATaTAiT";
+        let compartment = Compartment::try_build(ids);
 
-        assert!(compartment.is_ok());
-        let compartment = compartment.unwrap();
+        let expected_compartment = Compartment {
+            items: ids.chars().map(|id| Item::try_build(id).unwrap()).collect(),
+        };
 
-        assert_eq!(compartment.size(), items.len());
-
-        assert_eq!(
-            compartment.get_number_of_items_with_id('a'),
-            2,
-            "the number of items for 'a' is wrong"
-        );
-        assert_eq!(
-            compartment.get_number_of_items_with_id('A'),
-            3,
-            "the number of items for 'A' is wrong"
-        );
-        assert_eq!(
-            compartment.get_number_of_items_with_id('i'),
-            4,
-            "the number of items for 'i' is wrong"
-        );
-        assert_eq!(
-            compartment.get_number_of_items_with_id('T'),
-            5,
-            "the number of items for 'T' is wrong"
-        );
+        assert_eq!(compartment, Ok(expected_compartment));
     }
 
     #[test]
     fn build_compartment_from_digits() {
-        let items = "213547685192";
-        let compartment = Compartment::try_build(items);
+        let ids = "213547685192";
+        let compartment = Compartment::try_build(ids);
 
         assert_eq!(
             compartment,
@@ -158,8 +114,8 @@ mod tests {
 
     #[test]
     fn build_compartment_from_special_signs() {
-        let items = "!@#$%^&*()_[]";
-        let compartment = Compartment::try_build(items);
+        let ids = "!@#$%^&*()_[]";
+        let compartment = Compartment::try_build(ids);
 
         assert_eq!(
             compartment,
@@ -174,17 +130,86 @@ mod tests {
 
     #[test]
     fn build_compartment_from_special_letters() {
-        let items = "abcèÏüñìäÜÏ";
-        let compartment = Compartment::try_build(items);
+        let ids = "èÏüñìäÜÏ";
+        let compartment = Compartment::try_build(ids);
 
         assert_eq!(
             compartment,
             Err(CompartmentError {
-                position: 4,
+                position: 1,
                 cause: String::from(
                     "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was 'è'"
                 )
             })
         )
+    }
+
+    #[test]
+    fn build_compartment_from_invalid_character_not_in_first_position() {
+        let ids = "aDnvDS9DkjFn";
+        let compartment = Compartment::try_build(ids);
+
+        assert_eq!(
+            compartment,
+            Err(CompartmentError {
+                position: 7,
+                cause: String::from(
+                    "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was '9'"
+                )
+            })
+        )
+    }
+
+    #[test]
+    fn test_no_common_item() {
+        let ids_1 = "abcd";
+        let ids_2 = "efgh";
+        let compartment_1 = Compartment::try_build(ids_1).unwrap();
+        let compartment_2 = Compartment::try_build(ids_2).unwrap();
+
+        assert_eq!(compartment_1.get_first_common_item(&compartment_2), None);
+    }
+
+    #[test]
+    fn test_common_item_only_in_one_compartment() {
+        let ids_1 = "aabb";
+        let ids_2 = "ccdd";
+        let compartment_1 = Compartment::try_build(ids_1).unwrap();
+        let compartment_2 = Compartment::try_build(ids_2).unwrap();
+
+        assert_eq!(compartment_1.get_first_common_item(&compartment_2), None);
+    }
+
+    #[test]
+    fn test_one_common_item() {
+        let ids_1 = "abcd";
+        let ids_2 = "efgd";
+        let compartment_1 = Compartment::try_build(ids_1).unwrap();
+        let compartment_2 = Compartment::try_build(ids_2).unwrap();
+
+        let first_common_item = compartment_1.get_first_common_item(&compartment_2).unwrap();
+        assert_eq!(first_common_item.get_id(), 'd');
+    }
+
+    #[test]
+    fn test_two_common_items() {
+        let ids_1 = "abcd";
+        let ids_2 = "ecgb";
+        let compartment_1 = Compartment::try_build(ids_1).unwrap();
+        let compartment_2 = Compartment::try_build(ids_2).unwrap();
+
+        let first_common_item = compartment_1.get_first_common_item(&compartment_2).unwrap();
+        assert_eq!(first_common_item.get_id(), 'b');
+    }
+
+    #[test]
+    fn test_multiple_common_items() {
+        let ids_1 = "abcd";
+        let ids_2 = "edba";
+        let compartment_1 = Compartment::try_build(ids_1).unwrap();
+        let compartment_2 = Compartment::try_build(ids_2).unwrap();
+
+        let first_common_item = compartment_1.get_first_common_item(&compartment_2).unwrap();
+        assert_eq!(first_common_item.get_id(), 'a');
     }
 }

@@ -110,7 +110,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_structure() {
+    fn test_valid_file() {
         let file_name = "../input/test_input.txt";
 
         let rucksack_parser = Parser::build(file_name);
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_missing_file() {
-        let file_name = "../input/wrong_test_input.txt";
+        let file_name = "../input/missing_test_input.txt";
 
         let rucksack_parser = Parser::build(file_name);
         let rucksacks = rucksack_parser.try_get_rucksacks();
@@ -139,6 +139,26 @@ mod tests {
             rucksacks,
             Err(ParsingError::IOError {
                 cause: String::from("No such file or directory (os error 2)")
+            })
+        );
+    }
+
+    #[test]
+    fn test_invalid_file() {
+        let file_name = "../input/invalid_test_input.txt";
+
+        let rucksack_parser = Parser::build(file_name);
+        let rucksacks = rucksack_parser.try_get_rucksacks();
+
+        assert_eq!(
+            rucksacks,
+            Err(ParsingError::ParsingRucksackError {
+                line_index: 4,
+                cause: format!(
+                    "second compartment error, {}, {}",
+                    "compartment error at position '5'",
+                    "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was '!'",
+                )
             })
         );
     }
