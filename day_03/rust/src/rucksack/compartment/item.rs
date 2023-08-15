@@ -9,7 +9,7 @@ impl fmt::Display for InvalidCharacterError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was {}",
+            "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was '{}'",
             self.invalid_character
         )
     }

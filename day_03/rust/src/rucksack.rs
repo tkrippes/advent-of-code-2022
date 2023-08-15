@@ -15,10 +15,10 @@ impl fmt::Display for RucksackError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             RucksackError::FirstCompartmentError { cause } => {
-                write!(f, "First compartment error, cause: {}", cause)
+                write!(f, "first compartment error, {}", cause)
             }
             RucksackError::SecondCompartmentError { cause } => {
-                write!(f, "Second compartment error, cause: {}", cause)
+                write!(f, "second compartment error, {}", cause)
             }
         }
     }
@@ -47,13 +47,8 @@ pub struct Rucksack {
 }
 
 impl Rucksack {
-    pub fn try_build(items: &str) -> Result<Self, RucksackError> {
-        let half_position = if items.len() % 2 == 0 {
-            items.len() / 2
-        } else {
-            items.len() / 2 + 1
-        };
-        let (first_items_half, second_items_half) = items.split_at(half_position);
+    pub fn try_build(ids: &str) -> Result<Self, RucksackError> {
+        let (first_items_half, second_items_half) = ids.split_at(Self::get_mid_position(ids));
 
         let first_compartment = match Compartment::try_build(first_items_half) {
             Ok(first_compartment) => first_compartment,
@@ -69,6 +64,14 @@ impl Rucksack {
             first_compartment,
             second_compartment,
         })
+    }
+
+    fn get_mid_position(ids: &str) -> usize {
+        if ids.len() % 2 == 0 {
+            ids.len() / 2
+        } else {
+            ids.len() / 2 + 1
+        }
     }
 
     pub fn get_first_common_item_of_compartments(&self) -> Option<&Item> {

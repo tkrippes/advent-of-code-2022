@@ -9,20 +9,20 @@ use std::{
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
     IOError { cause: String },
-    ParsingRucksackError { line: usize, cause: String },
+    ParsingRucksackError { line_index: usize, cause: String },
 }
 
 impl fmt::Display for ParsingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ParsingError::IOError { cause } => {
-                write!(f, "Error while parsing, IO error, cause: {}", cause)
+                write!(f, "parsing error, IO error, {}", cause)
             }
-            ParsingError::ParsingRucksackError { line, cause } => {
+            ParsingError::ParsingRucksackError { line_index, cause } => {
                 write!(
                     f,
-                    "Error while parsing, rucksack error at line {}, cause: {}",
-                    line, cause
+                    "parsing error, rucksack error at line '{}', {}",
+                    line_index, cause
                 )
             }
         }
@@ -40,9 +40,9 @@ impl From<io::Error> for ParsingError {
 }
 
 impl ParsingError {
-    fn build_parsing_rucksack_error(line: usize, err: RucksackError) -> Self {
+    fn build_parsing_rucksack_error(line_index: usize, err: RucksackError) -> Self {
         ParsingError::ParsingRucksackError {
-            line,
+            line_index,
             cause: err.to_string(),
         }
     }
@@ -62,19 +62,12 @@ impl Parser {
     pub fn try_get_rucksacks(&self) -> Result<Vec<Rucksack>, ParsingError> {
         let file = self.try_open_file()?;
 
-        let rucksacks_results: Vec<Result<Rucksack, ParsingError>> = file
-            .lines()
-            .enumerate()
-            .map(|(position, line)| (position, self.try_get_line(line)))
-            .map(|(position, line)| self.try_build_rucksack(position, line))
-            .collect();
-
         let mut rucksacks = Vec::new();
-        for result in rucksacks_results {
-            match result {
-                Ok(rucksack) => rucksacks.push(rucksack),
-                Err(err) => return Err(err),
-            };
+
+        for (line_index, line) in file.lines().enumerate() {
+            let line_content = self.try_get_line_content(line)?;
+            let rucksack = self.try_build_rucksack(line_index, line_content)?;
+            rucksacks.push(rucksack);
         }
 
         Ok(rucksacks)
@@ -87,7 +80,10 @@ impl Parser {
         }
     }
 
-    fn try_get_line(&self, line: Result<String, io::Error>) -> Result<String, ParsingError> {
+    fn try_get_line_content(
+        &self,
+        line: Result<String, io::Error>,
+    ) -> Result<String, ParsingError> {
         match line {
             Ok(line) => Ok(line.trim().to_string()),
             Err(err) => Err(err.into()),
@@ -96,15 +92,15 @@ impl Parser {
 
     fn try_build_rucksack(
         &self,
-        position: usize,
-        line: Result<String, ParsingError>,
+        line_index: usize,
+        line_content: String,
     ) -> Result<Rucksack, ParsingError> {
-        match line {
-            Ok(line) => match Rucksack::try_build(&line) {
-                Ok(rucksack) => Ok(rucksack),
-                Err(err) => Err(ParsingError::build_parsing_rucksack_error(position, err)),
-            },
-            Err(err) => Err(err),
+        match Rucksack::try_build(&line_content) {
+            Ok(rucksack) => Ok(rucksack),
+            Err(err) => Err(ParsingError::build_parsing_rucksack_error(
+                line_index + 1,
+                err,
+            )),
         }
     }
 }

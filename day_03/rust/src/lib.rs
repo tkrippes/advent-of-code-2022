@@ -14,7 +14,7 @@ pub fn get_sum_of_properties(file_name: &str) -> u32 {
             .map(|item| item.get_priority())
             .sum(),
         Err(err) => {
-            println!("Error while getting sum of properties: {}", err);
+            println!("Error while getting sum of properties, {}", err);
             0
         }
     }

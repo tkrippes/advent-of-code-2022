@@ -13,7 +13,7 @@ impl fmt::Display for CompartmentError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Invalid compartment, error at position {}, cause: {}",
+            "compartment error at position '{}', {}",
             self.position, self.cause
         )
     }
@@ -36,15 +36,13 @@ pub struct Compartment {
 }
 
 impl Compartment {
-    pub fn try_build(items: &str) -> Result<Self, CompartmentError> {
-        let items_results: Vec<Result<Item, InvalidCharacterError>> =
-            items.chars().map(Item::try_build).collect();
-
+    pub fn try_build(ids: &str) -> Result<Self, CompartmentError> {
         let mut items = Vec::new();
-        for (position, result) in items_results.into_iter().enumerate() {
-            match result {
+
+        for (position, id) in ids.chars().enumerate() {
+            match Item::try_build(id) {
                 Ok(item) => items.push(item),
-                Err(err) => return Err(CompartmentError::build(position, err)),
+                Err(err) => return Err(CompartmentError::build(position + 1, err)),
             }
         }
 
@@ -52,9 +50,7 @@ impl Compartment {
     }
 
     pub fn get_first_common_item(&self, other: &Compartment) -> Option<&Item> {
-        self.items
-            .iter()
-            .find(|&item| other.contains(item.get_id()))
+        self.items.iter().find(|item| other.contains(item.get_id()))
     }
 
     pub fn contains(&self, item_id: char) -> bool {
@@ -152,9 +148,9 @@ mod tests {
         assert_eq!(
             compartment,
             Err(CompartmentError {
-                position: 0,
+                position: 1,
                 cause: String::from(
-                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was 2"
+                    "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was '2'"
                 )
             })
         )
@@ -168,9 +164,9 @@ mod tests {
         assert_eq!(
             compartment,
             Err(CompartmentError {
-                position: 0,
+                position: 1,
                 cause: String::from(
-                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was !"
+                    "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was '!'"
                 )
             })
         )
@@ -184,9 +180,9 @@ mod tests {
         assert_eq!(
             compartment,
             Err(CompartmentError {
-                position: 3,
+                position: 4,
                 cause: String::from(
-                    "Invalid character, character must be ascii alphanumeric (a-z, A-Z), but was è"
+                    "invalid character error, should be ascii alphanumeric (a-z, A-Z), but was 'è'"
                 )
             })
         )
