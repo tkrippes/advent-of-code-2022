@@ -35,9 +35,6 @@ impl AssignmentPair {
     fn do_assignments_overlap(&self) -> bool {
         self.first_assignment
             .is_partially_contained_in(&self.second_assignment)
-        // || self
-        //     .second_assignment
-        //     .is_partially_contained_in(&self.first_assignment)
     }
 }
 
