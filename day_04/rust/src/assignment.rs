@@ -1,12 +1,11 @@
-use std::cmp::Ordering::{Equal, Greater, Less};
-
-struct AssignmentPair {
+#[derive(Debug, PartialEq)]
+pub struct AssignmentPair {
     first_assignment: Assignment,
     second_assignment: Assignment,
 }
 
 impl AssignmentPair {
-    fn build(
+    pub fn build(
         first_assignment_start_section_id: u32,
         first_assignment_end_section_id: u32,
         second_assignment_start_section_id: u32,
@@ -38,6 +37,7 @@ impl AssignmentPair {
     }
 }
 
+#[derive(Debug, PartialEq)]
 struct Assignment {
     start_section: Section,
     end_section: Section,
@@ -64,7 +64,7 @@ impl Assignment {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Section {
     id: u32,
 }
