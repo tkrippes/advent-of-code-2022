@@ -23,7 +23,7 @@ impl AssignmentPair {
         }
     }
 
-    fn is_one_assignment_fully_contained_in_the_other_assignment(&self) -> bool {
+    pub fn is_one_assignment_fully_contained_in_the_other_assignment(&self) -> bool {
         self.first_assignment
             .is_fully_contained_in(&self.second_assignment)
             || self
@@ -31,7 +31,7 @@ impl AssignmentPair {
                 .is_fully_contained_in(&self.first_assignment)
     }
 
-    fn do_assignments_overlap(&self) -> bool {
+    pub fn do_assignments_overlap(&self) -> bool {
         self.first_assignment
             .is_partially_contained_in(&self.second_assignment)
     }
@@ -57,9 +57,9 @@ impl Assignment {
 
     fn is_partially_contained_in(&self, other: &Assignment) -> bool {
         if self.start_section <= other.start_section {
-            self.end_section > other.start_section
+            self.end_section >= other.start_section
         } else {
-            self.start_section < other.end_section
+            self.start_section <= other.end_section
         }
     }
 }
@@ -210,7 +210,7 @@ mod tests {
 
         #[test]
         fn is_not_partially_contained() {
-            let assignment_pair = AssignmentPair::build(0, 2, 2, 5);
+            let assignment_pair = AssignmentPair::build(0, 2, 3, 5);
             assert!(!assignment_pair.do_assignments_overlap());
         }
     }
@@ -323,29 +323,15 @@ mod tests {
         }
 
         #[test]
-        fn is_not_partially_contained_completely_before() {
+        fn is_not_partially_contained_before() {
             let first_assignment = Assignment::build(0, 1);
             let second_assignment = Assignment::build(2, 5);
             assert!(!first_assignment.is_partially_contained_in(&second_assignment));
         }
 
         #[test]
-        fn is_not_partially_contained_completely_after() {
-            let first_assignment = Assignment::build(6, 7);
-            let second_assignment = Assignment::build(2, 5);
-            assert!(!first_assignment.is_partially_contained_in(&second_assignment));
-        }
-
-        #[test]
-        fn is_not_partially_contained_before() {
-            let first_assignment = Assignment::build(0, 2);
-            let second_assignment = Assignment::build(2, 5);
-            assert!(!first_assignment.is_partially_contained_in(&second_assignment));
-        }
-
-        #[test]
         fn is_not_partially_contained_after() {
-            let first_assignment = Assignment::build(5, 7);
+            let first_assignment = Assignment::build(6, 7);
             let second_assignment = Assignment::build(2, 5);
             assert!(!first_assignment.is_partially_contained_in(&second_assignment));
         }

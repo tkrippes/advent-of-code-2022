@@ -41,20 +41,20 @@ impl ParsingError {
     }
 }
 
-struct Parser {
+pub struct Parser {
     file_name: String,
     parsing_regex: Regex,
 }
 
 impl Parser {
-    fn build(file_name: &str, parsing_regex: &str) -> Self {
+    pub fn build(file_name: &str, parsing_regex: &str) -> Self {
         Parser {
             file_name: String::from(file_name),
             parsing_regex: Regex::new(parsing_regex).unwrap(),
         }
     }
 
-    fn try_get_assignment_pairs(&self) -> Result<Vec<AssignmentPair>, ParsingError> {
+    pub fn try_get_assignment_pairs(&self) -> Result<Vec<AssignmentPair>, ParsingError> {
         let file = self.try_open_file()?;
 
         let mut assignment_pairs = Vec::new();

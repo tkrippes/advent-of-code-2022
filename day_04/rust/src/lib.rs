@@ -1,8 +1,46 @@
 mod assignment;
 mod parser;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use parser::Parser;
+
+pub fn get_number_of_fully_contained_assignments(file_name: &str, parsing_regex: &str) -> usize {
+    let parser = Parser::build(file_name, parsing_regex);
+
+    match parser.try_get_assignment_pairs() {
+        Ok(assignment_pairs) => assignment_pairs
+            .iter()
+            .map(|assignment_pair| {
+                assignment_pair.is_one_assignment_fully_contained_in_the_other_assignment()
+            })
+            .filter(|is_fully_contained| *is_fully_contained)
+            .count(),
+        Err(err) => {
+            println!(
+                "Error while getting number of fully contained assignments, {}",
+                err
+            );
+            0
+        }
+    }
+}
+
+pub fn get_number_of_overlapping_assignments(file_name: &str, parsing_regex: &str) -> usize {
+    let parser = Parser::build(file_name, parsing_regex);
+
+    match parser.try_get_assignment_pairs() {
+        Ok(assignment_pairs) => assignment_pairs
+            .iter()
+            .map(|assignment_pair| assignment_pair.do_assignments_overlap())
+            .filter(|do_overlap| *do_overlap)
+            .count(),
+        Err(err) => {
+            println!(
+                "Error while getting number of overlapping assignments, {}",
+                err
+            );
+            0
+        }
+    }
 }
 
 #[cfg(test)]
@@ -10,8 +48,62 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn test_valid_file_fully_contained() {
+        let file_name = "../input/test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_fully_contained_assignments(file_name, parsing_regex),
+            2
+        );
+    }
+
+    #[test]
+    fn test_missing_file_fully_contained() {
+        let file_name = "../input/missing_test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_fully_contained_assignments(file_name, parsing_regex),
+            0
+        );
+    }
+
+    #[test]
+    fn test_invalid_file_fully_contained() {
+        let file_name = "../input/invalid_test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_fully_contained_assignments(file_name, parsing_regex),
+            0
+        );
+    }
+
+    #[test]
+    fn test_valid_file_overlapping() {
+        let file_name = "../input/test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_overlapping_assignments(file_name, parsing_regex),
+            4
+        );
+    }
+
+    #[test]
+    fn test_missing_file_overlapping() {
+        let file_name = "../input/missing_test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_overlapping_assignments(file_name, parsing_regex),
+            0
+        );
+    }
+
+    #[test]
+    fn test_invalid_file_overlapping() {
+        let file_name = "../input/invalid_test_input.txt";
+        let parsing_regex = r"^(\d+)+-(\d+)+,(\d+)+-(\d+)+$";
+        assert_eq!(
+            get_number_of_overlapping_assignments(file_name, parsing_regex),
+            0
+        );
     }
 }
