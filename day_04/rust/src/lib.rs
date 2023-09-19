@@ -4,8 +4,8 @@ mod parser;
 
 use parser::Parser;
 
-pub fn get_number_of_fully_contained_assignments(file_name: &str, parsing_regex: &str) -> usize {
-    let parser = Parser::build(file_name, parsing_regex);
+pub fn get_number_of_fully_contained_assignments(file_name: &str) -> usize {
+    let parser = Parser::build(file_name);
 
     match parser.try_get_assignment_pairs() {
         Ok(assignment_pairs) => assignment_pairs
@@ -25,8 +25,8 @@ pub fn get_number_of_fully_contained_assignments(file_name: &str, parsing_regex:
     }
 }
 
-pub fn get_number_of_overlapping_assignments(file_name: &str, parsing_regex: &str) -> usize {
-    let parser = Parser::build(file_name, parsing_regex);
+pub fn get_number_of_overlapping_assignments(file_name: &str) -> usize {
+    let parser = Parser::build(file_name);
 
     match parser.try_get_assignment_pairs() {
         Ok(assignment_pairs) => assignment_pairs
