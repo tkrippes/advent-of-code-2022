@@ -1,4 +1,4 @@
-use crate::assignment::AssignmentPair;
+use crate::assignment_pair::AssignmentPair;
 
 use std::{
     error, fmt, fs,
@@ -130,10 +130,14 @@ impl Parser {
         }
 
         Ok(AssignmentPair::build(
-            first_assignment_start_section_id,
-            first_assignment_end_section_id,
-            second_assignment_start_section_id,
-            second_assignment_end_section_id,
+            (
+                first_assignment_start_section_id,
+                first_assignment_end_section_id,
+            ),
+            (
+                second_assignment_start_section_id,
+                second_assignment_end_section_id,
+            ),
         ))
     }
 
@@ -207,12 +211,12 @@ mod tests {
         let assignment_pairs = assignment_parser.try_get_assignment_pairs();
 
         let expected_rucksacks = vec![
-            AssignmentPair::build(2, 4, 6, 8),
-            AssignmentPair::build(2, 3, 4, 5),
-            AssignmentPair::build(5, 7, 7, 9),
-            AssignmentPair::build(2, 8, 3, 7),
-            AssignmentPair::build(6, 6, 4, 6),
-            AssignmentPair::build(2, 6, 4, 8),
+            AssignmentPair::build((2, 4), (6, 8)),
+            AssignmentPair::build((2, 3), (4, 5)),
+            AssignmentPair::build((5, 7), (7, 9)),
+            AssignmentPair::build((2, 8), (3, 7)),
+            AssignmentPair::build((6, 6), (4, 6)),
+            AssignmentPair::build((2, 6), (4, 8)),
         ];
 
         assert_eq!(assignment_pairs, Ok(expected_rucksacks));

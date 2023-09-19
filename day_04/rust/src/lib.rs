@@ -1,4 +1,5 @@
 mod assignment;
+mod assignment_pair;
 mod parser;
 
 use parser::Parser;
