@@ -63,13 +63,6 @@ impl Parser {
         let (first_assignment, second_assignment) =
             self.try_parse_assignments(line_index, line_content)?;
 
-        self.validate_assignments(
-            first_assignment,
-            second_assignment,
-            line_index,
-            line_content,
-        )?;
-
         Ok(AssignmentPair::build(first_assignment, second_assignment))
     }
 
@@ -89,6 +82,13 @@ impl Parser {
             self.try_parse_section(sections[2], line_index, line_content)?,
             self.try_parse_section(sections[3], line_index, line_content)?,
         );
+
+        self.validate_assignments(
+            first_assignment,
+            second_assignment,
+            line_index,
+            line_content,
+        )?;
 
         Ok((first_assignment, second_assignment))
     }
@@ -145,7 +145,7 @@ impl Parser {
             return Err((
                 line_index + 1,
                 format!(
-                    "start section of first assignment is greater than start section of first assignment in '{}'",
+                    "start section of first assignment is greater than end section of first assignment in '{}'",
                     line_content
                 ),
             ).into());
@@ -155,7 +155,7 @@ impl Parser {
             return Err((
                 line_index + 1,
                 format!(
-                    "start section of second assignment is greater than start section of second assignment in '{}'",
+                    "start section of second assignment is greater than end section of second assignment in '{}'",
                     line_content
                 ),
             ).into());
@@ -176,7 +176,7 @@ mod tests {
         let assignment_parser = Parser::build(file_name);
         let assignment_pairs = assignment_parser.try_parse_assignment_pairs();
 
-        let expected_rucksacks = vec![
+        let expected_assignment_pairs = vec![
             AssignmentPair::build((2, 4), (6, 8)),
             AssignmentPair::build((2, 3), (4, 5)),
             AssignmentPair::build((5, 7), (7, 9)),
@@ -185,7 +185,7 @@ mod tests {
             AssignmentPair::build((2, 6), (4, 8)),
         ];
 
-        assert_eq!(assignment_pairs, Ok(expected_rucksacks));
+        assert_eq!(assignment_pairs, Ok(expected_assignment_pairs));
     }
 
     #[test]
@@ -208,15 +208,170 @@ mod tests {
         let file_name = "../input/invalid_test_input.txt";
 
         let assignment_parser = Parser::build(file_name);
-        let rucksacks = assignment_parser.try_parse_assignment_pairs();
+        let assignment_pairs = assignment_parser.try_parse_assignment_pairs();
 
         assert_eq!(
-            rucksacks,
+            assignment_pairs,
             Err(Error::ParsingAssignmentPairsError {
                 line_index: 1,
                 cause: format!(
                     "regex '{}' could not find matches in '{}'",
                     assignment_parser.parsing_regex, "2-a,6-8"
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_valid_assignments() {
+        let file_name = "";
+        let line_content = "1-2,3-4";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(assignments, Ok(((1, 2), (3, 4))));
+    }
+
+    #[test]
+    fn test_not_enough_assignments() {
+        let file_name = "";
+        let line_content = "1-2";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "regex '{}' could not find matches in '{}'",
+                    assignment_parser.parsing_regex, line_content
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_too_many_assignments() {
+        let file_name = "";
+        let line_content = "1-2,3-4,5-6";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "regex '{}' could not find matches in '{}'",
+                    assignment_parser.parsing_regex, line_content
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_non_numeric_assignment_section() {
+        let file_name = "";
+        let line_content = "ab-2,3-4";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "regex '{}' could not find matches in '{}'",
+                    assignment_parser.parsing_regex, line_content
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_unit_first_assignment() {
+        let file_name = "";
+        let line_content = "1-1,3-4";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(assignments, Ok(((1, 1), (3, 4))));
+    }
+
+    #[test]
+    fn test_invalid_first_assignment() {
+        let file_name = "";
+        let line_content = "2-1,3-4";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "start section of first assignment is greater than end section of first assignment in '{}'",
+                    line_content
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_unit_second_assignment() {
+        let file_name = "";
+        let line_content = "1-2,3-3";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(assignments, Ok(((1, 2), (3, 3))));
+    }
+
+    #[test]
+    fn test_invalid_second_assignment() {
+        let file_name = "";
+        let line_content = "1-2,4-3";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "start section of second assignment is greater than end section of second assignment in '{}'",
+                    line_content
+                )
+            })
+        );
+    }
+
+    #[test]
+    fn test_u32_overflow_assignment_section() {
+        let file_name = "";
+        let line_content = "1-2,3-9999999999999999999999999999999999999999999999999";
+
+        let assignment_parser = Parser::build(file_name);
+        let assignments = assignment_parser.try_parse_assignments(0, line_content);
+
+        assert_eq!(
+            assignments,
+            Err(Error::ParsingAssignmentPairsError {
+                line_index: 1,
+                cause: format!(
+                    "could not parse section '{}' to u32 in {}, {}",
+                    "9999999999999999999999999999999999999999999999999",
+                    line_content,
+                    "number too large to fit in target type"
                 )
             })
         );
