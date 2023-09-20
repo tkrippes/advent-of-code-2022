@@ -7,7 +7,7 @@ use parser::Parser;
 pub fn get_number_of_fully_contained_assignments(file_name: &str) -> usize {
     let parser = Parser::build(file_name);
 
-    match parser.try_get_assignment_pairs() {
+    match parser.try_parse_assignment_pairs() {
         Ok(assignment_pairs) => assignment_pairs
             .iter()
             .map(|assignment_pair| {
@@ -28,7 +28,7 @@ pub fn get_number_of_fully_contained_assignments(file_name: &str) -> usize {
 pub fn get_number_of_overlapping_assignments(file_name: &str) -> usize {
     let parser = Parser::build(file_name);
 
-    match parser.try_get_assignment_pairs() {
+    match parser.try_parse_assignment_pairs() {
         Ok(assignment_pairs) => assignment_pairs
             .iter()
             .map(|assignment_pair| assignment_pair.do_assignments_overlap())

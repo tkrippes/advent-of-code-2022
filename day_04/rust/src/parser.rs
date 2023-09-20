@@ -10,7 +10,9 @@ use std::{
     path,
 };
 
-use regex::{Captures, Regex};
+use regex::Regex;
+
+type Assignment = (u32, u32);
 
 pub struct Parser {
     file_name: String,
@@ -25,14 +27,14 @@ impl Parser {
         }
     }
 
-    pub fn try_get_assignment_pairs(&self) -> Result<Vec<AssignmentPair>, Error> {
+    pub fn try_parse_assignment_pairs(&self) -> Result<Vec<AssignmentPair>, Error> {
         let file = self.try_open_file()?;
 
         let mut assignment_pairs = Vec::new();
 
         for (line_index, line) in file.lines().enumerate() {
             let line_content = self.try_get_line_content(line)?;
-            let assignment_pair = self.try_build_assignment_pair(line_index, &line_content)?;
+            let assignment_pair = self.try_parse_assignment_pair(line_index, &line_content)?;
             assignment_pairs.push(assignment_pair);
         }
 
@@ -53,32 +55,93 @@ impl Parser {
         }
     }
 
-    fn try_build_assignment_pair(
+    fn try_parse_assignment_pair(
         &self,
         line_index: usize,
         line_content: &str,
     ) -> Result<AssignmentPair, Error> {
-        let captures = self.parsing_regex.captures(line_content);
+        let (first_assignment, second_assignment) =
+            self.try_parse_assignments(line_index, line_content)?;
 
-        if captures.is_none() {
-            return Err((
+        self.validate_assignments(
+            first_assignment,
+            second_assignment,
+            line_index,
+            line_content,
+        )?;
+
+        Ok(AssignmentPair::build(first_assignment, second_assignment))
+    }
+
+    fn try_parse_assignments(
+        &self,
+        line_index: usize,
+        line_content: &str,
+    ) -> Result<(Assignment, Assignment), Error> {
+        let sections = self.try_parse_sections(line_index, line_content)?;
+
+        let first_assignment = (
+            self.try_parse_section(sections[0], line_index, line_content)?,
+            self.try_parse_section(sections[1], line_index, line_content)?,
+        );
+
+        let second_assignment = (
+            self.try_parse_section(sections[2], line_index, line_content)?,
+            self.try_parse_section(sections[3], line_index, line_content)?,
+        );
+
+        Ok((first_assignment, second_assignment))
+    }
+
+    fn try_parse_sections<'a>(
+        &self,
+        line_index: usize,
+        line_content: &'a str,
+    ) -> Result<[&'a str; 4], Error> {
+        let (_, sections) = match self.parsing_regex.captures(line_content) {
+            Some(captures) => captures.extract(),
+            None => {
+                return Err((
+                    line_index + 1,
+                    format!(
+                        "regex '{}' could not find matches in '{}'",
+                        self.parsing_regex, line_content
+                    ),
+                )
+                    .into())
+            }
+        };
+
+        Ok(sections)
+    }
+
+    fn try_parse_section(
+        &self,
+        section: &str,
+        line_index: usize,
+        line_content: &str,
+    ) -> Result<u32, Error> {
+        match section.parse::<u32>() {
+            Ok(section) => Ok(section),
+            Err(err) => Err((
                 line_index + 1,
                 format!(
-                    "regex '{}' could not find matches in '{}'",
-                    self.parsing_regex, line_content
+                    "could not parse section '{}' to u32 in {}, {}",
+                    section, line_content, err
                 ),
             )
-                .into());
+                .into()),
         }
+    }
 
-        let (
-            first_assignment_start_section_id,
-            first_assignment_end_section_id,
-            second_assignment_start_section_id,
-            second_assignment_end_section_id,
-        ) = self.try_parse_section_ids(captures, line_index, line_content)?;
-
-        if first_assignment_start_section_id > first_assignment_end_section_id {
+    fn validate_assignments(
+        &self,
+        first_assignment: Assignment,
+        second_assignment: Assignment,
+        line_index: usize,
+        line_content: &str,
+    ) -> Result<(), Error> {
+        if first_assignment.0 > first_assignment.1 {
             return Err((
                 line_index + 1,
                 format!(
@@ -88,7 +151,7 @@ impl Parser {
             ).into());
         }
 
-        if second_assignment_start_section_id > second_assignment_end_section_id {
+        if second_assignment.0 > second_assignment.1 {
             return Err((
                 line_index + 1,
                 format!(
@@ -98,73 +161,7 @@ impl Parser {
             ).into());
         }
 
-        Ok(AssignmentPair::build(
-            (
-                first_assignment_start_section_id,
-                first_assignment_end_section_id,
-            ),
-            (
-                second_assignment_start_section_id,
-                second_assignment_end_section_id,
-            ),
-        ))
-    }
-
-    fn try_parse_section_ids(
-        &self,
-        captures: Option<Captures<'_>>,
-        line_index: usize,
-        line_content: &str,
-    ) -> Result<(u32, u32, u32, u32), Error> {
-        let Some((_, [first_assignment_start_section_id,
-            first_assignment_end_section_id,
-            second_assignment_start_section_id,
-            second_assignment_end_section_id])) = captures.map(|caps| caps.extract())
-            else { return Err((
-                            line_index + 1,
-                            format!(
-                                "regex '{}' could not find exactly 4 matches in '{}'",
-                                self.parsing_regex, line_content
-                            ),
-                        ).into()) };
-
-        let first_assignment_start_section_id =
-            self.try_parse_section_id(first_assignment_start_section_id, line_index, line_content)?;
-        let first_assignment_end_section_id =
-            self.try_parse_section_id(first_assignment_end_section_id, line_index, line_content)?;
-        let second_assignment_start_section_id = self.try_parse_section_id(
-            second_assignment_start_section_id,
-            line_index,
-            line_content,
-        )?;
-        let second_assignment_end_section_id =
-            self.try_parse_section_id(second_assignment_end_section_id, line_index, line_content)?;
-
-        Ok((
-            first_assignment_start_section_id,
-            first_assignment_end_section_id,
-            second_assignment_start_section_id,
-            second_assignment_end_section_id,
-        ))
-    }
-
-    fn try_parse_section_id(
-        &self,
-        section_id: &str,
-        line_index: usize,
-        line_content: &str,
-    ) -> Result<u32, Error> {
-        match section_id.parse::<u32>() {
-            Ok(section_id) => Ok(section_id),
-            Err(err) => Err((
-                line_index + 1,
-                format!(
-                    "could not parse section id '{}' to u32 in {}, {}",
-                    section_id, line_content, err
-                ),
-            )
-                .into()),
-        }
+        Ok(())
     }
 }
 
@@ -177,7 +174,7 @@ mod tests {
         let file_name = "../input/test_input.txt";
 
         let assignment_parser = Parser::build(file_name);
-        let assignment_pairs = assignment_parser.try_get_assignment_pairs();
+        let assignment_pairs = assignment_parser.try_parse_assignment_pairs();
 
         let expected_rucksacks = vec![
             AssignmentPair::build((2, 4), (6, 8)),
@@ -196,7 +193,7 @@ mod tests {
         let file_name = "../input/missing_test_input.txt";
 
         let assignment_parser = Parser::build(file_name);
-        let assignment_pairs = assignment_parser.try_get_assignment_pairs();
+        let assignment_pairs = assignment_parser.try_parse_assignment_pairs();
 
         assert_eq!(
             assignment_pairs,
@@ -211,7 +208,7 @@ mod tests {
         let file_name = "../input/invalid_test_input.txt";
 
         let assignment_parser = Parser::build(file_name);
-        let rucksacks = assignment_parser.try_get_assignment_pairs();
+        let rucksacks = assignment_parser.try_parse_assignment_pairs();
 
         assert_eq!(
             rucksacks,
